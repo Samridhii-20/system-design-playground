@@ -12,8 +12,9 @@ export default function DatabaseNode({ id, selected, data }: NodeProps) {
   return (
     <SystemNodeWrapper
       id={id}
+      nodeType="database"
       selected={!!selected}
-      data={data as SystemNodeData}
+      data={data as unknown as SystemNodeData}
     />
   );
 }

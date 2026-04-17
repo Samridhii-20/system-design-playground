@@ -12,8 +12,9 @@ export default function LoadBalancerNode({ id, selected, data }: NodeProps) {
   return (
     <SystemNodeWrapper
       id={id}
+      nodeType="loadBalancer"
       selected={!!selected}
-      data={data as SystemNodeData}
+      data={data as unknown as SystemNodeData}
     />
   );
 }

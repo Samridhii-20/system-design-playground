@@ -12,8 +12,9 @@ export default function ServerNode({ id, selected, data }: NodeProps) {
   return (
     <SystemNodeWrapper
       id={id}
+      nodeType="server"
       selected={!!selected}
-      data={data as SystemNodeData}
+      data={data as unknown as SystemNodeData}
     />
   );
 }

@@ -12,8 +12,9 @@ export default function CacheNode({ id, selected, data }: NodeProps) {
   return (
     <SystemNodeWrapper
       id={id}
+      nodeType="cache"
       selected={!!selected}
-      data={data as SystemNodeData}
+      data={data as unknown as SystemNodeData}
     />
   );
 }

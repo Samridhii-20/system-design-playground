@@ -196,3 +196,261 @@ body {
 .react-flow__renderer {
   background: var(--bg-primary) !important;
 }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Node config summary badges (shown on the node card)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.node-config-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(100, 116, 139, 0.15);
+}
+
+.node-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Configuration Panel (right sidebar)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.config-panel {
+  width: 300px;
+  min-width: 300px;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.97);
+  border-left: 1px solid rgba(100, 116, 139, 0.2);
+  backdrop-filter: blur(16px);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  animation: config-slide-in 0.25s ease-out;
+}
+
+@keyframes config-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Panel header */
+.config-panel-header {
+  padding: 20px 18px 14px;
+}
+
+.config-panel-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.config-panel-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 3px 10px;
+  border-radius: 6px;
+  margin-top: 12px;
+}
+
+/* Divider */
+.config-panel-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(100, 116, 139, 0.3),
+    transparent
+  );
+  margin: 0 18px;
+}
+
+/* Panel body */
+.config-panel-body {
+  flex: 1;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.config-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 2px;
+}
+
+/* Panel footer */
+.config-panel-footer {
+  padding: 12px 18px;
+  border-top: 1px solid rgba(100, 116, 139, 0.15);
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Config form fields
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.config-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.config-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #cbd5e1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.config-unit {
+  font-size: 10px;
+  font-weight: 400;
+  color: #64748b;
+  background: rgba(51, 65, 85, 0.5);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.config-input {
+  width: 100%;
+  padding: 8px 12px;
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(100, 116, 139, 0.25);
+  border-radius: 8px;
+  color: #f1f5f9;
+  font-size: 13px;
+  font-family: var(--font-geist-mono), monospace;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.config-input:hover {
+  border-color: rgba(100, 116, 139, 0.4);
+}
+
+.config-input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+/* Remove number input spinners on Chrome/Safari */
+.config-input[type="number"]::-webkit-inner-spin-button,
+.config-input[type="number"]::-webkit-outer-spin-button {
+  opacity: 1;
+}
+
+.config-select {
+  width: 100%;
+  padding: 8px 12px;
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(100, 116, 139, 0.25);
+  border-radius: 8px;
+  color: #f1f5f9;
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2394a3b8'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.config-select:hover {
+  border-color: rgba(100, 116, 139, 0.4);
+}
+
+.config-select:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.config-select option {
+  background: #1e293b;
+  color: #f1f5f9;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Range slider (cache hit rate)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.config-slider-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.config-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(51, 65, 85, 0.8);
+  outline: none;
+  cursor: pointer;
+}
+
+.config-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #a855f7;
+  border: 2px solid #0f172a;
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.4);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.config-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.6);
+}
+
+.config-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #a855f7;
+  border: 2px solid #0f172a;
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.4);
+}
+
+.config-slider-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #a855f7;
+  font-family: var(--font-geist-mono), monospace;
+  min-width: 42px;
+  text-align: right;
+}

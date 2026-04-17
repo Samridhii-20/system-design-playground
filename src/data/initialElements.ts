@@ -15,6 +15,7 @@ export const initialNodes: Node[] = [
       icon: "⚖️",
       description: "Distributes incoming traffic",
       color: "#6366f1", // indigo
+      config: { algorithm: "round-robin" },
     },
   },
   {
@@ -26,6 +27,7 @@ export const initialNodes: Node[] = [
       icon: "🖥️",
       description: "Handles API requests",
       color: "#22d3ee", // cyan
+      config: { instances: 1, processingTime: 100 },
     },
   },
   {
@@ -37,6 +39,7 @@ export const initialNodes: Node[] = [
       icon: "🖥️",
       description: "Handles API requests",
       color: "#22d3ee", // cyan
+      config: { instances: 1, processingTime: 100 },
     },
   },
   {
@@ -48,6 +51,7 @@ export const initialNodes: Node[] = [
       icon: "🗄️",
       description: "Stores persistent data",
       color: "#f59e0b", // amber
+      config: { readLatency: 5, writeLatency: 20 },
     },
   },
 ];
