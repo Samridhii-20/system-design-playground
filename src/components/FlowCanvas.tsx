@@ -12,16 +12,15 @@ import {
   MiniMap,
   Background,
   BackgroundVariant,
-  useNodesState,
-  useEdgesState,
-  useReactFlow,
   addEdge,
   type Connection,
   type Node,
+  type Edge,
   type NodeChange,
+  type EdgeChange,
 } from "@xyflow/react";
 
-// ─── CSS (must be imported after Tailwind globals) ───
+// ─── CSS ───
 import "@xyflow/react/dist/style.css";
 
 // ─── Custom node components ───
@@ -29,83 +28,69 @@ import LoadBalancerNode from "./nodes/LoadBalancerNode";
 import ServerNode from "./nodes/ServerNode";
 import DatabaseNode from "./nodes/DatabaseNode";
 import CacheNode from "./nodes/CacheNode";
+import UmlClassNode from "./nodes/UmlClassNode";
+
+// ─── Custom edge components ───
+import UmlEdge from "./edges/UmlEdge";
 
 // ─── Data ───
-import { initialNodes, initialEdges } from "@/data/initialElements";
 import { componentPalette } from "@/data/componentPalette";
 import { defaultConfigs } from "@/types/nodes";
 
-/**
- * Register all custom node types.
- * Must be defined OUTSIDE the component to avoid re-creating on every render.
- */
+// ─── Node & Edge mappings ───
 const nodeTypes = {
   loadBalancer: LoadBalancerNode,
   server: ServerNode,
   database: DatabaseNode,
   cache: CacheNode,
+  umlClass: UmlClassNode,
+};
+
+const edgeTypes = {
+  umlEdge: UmlEdge,
 };
 
 interface FlowCanvasProps {
-  /** Called whenever the selected node changes (or becomes null) */
+  mode: "hld" | "lld";
+  nodes: Node[];
+  edges: Edge[];
+  onNodesChange: (changes: NodeChange[]) => void;
+  onEdgesChange: (changes: EdgeChange[]) => void;
+  setNodes: React.Dispatch<React.SetStateAction<Node[]>>;
+  setEdges: React.Dispatch<React.SetStateAction<Edge[]>>;
   onNodeSelect?: (node: Node | null) => void;
+  onEdgeSelect?: (edge: Edge | null) => void;
 }
 
 /**
- * FlowCanvas — the main interactive graph editor.
- *
- * Handles:
- *   - Rendering nodes & edges
- *   - Drag-and-drop from sidebar → create new nodes
- *   - Keyboard delete (Backspace / Delete) → remove selected nodes
- *   - Drawing new edges between handles
- *   - Tracking which node is selected → dispatching to ConfigPanel
- *
- * Must be wrapped in <ReactFlowProvider> by the parent.
+ * FlowCanvas — the interactive grid editor. Supports HLD system models & LLD UML diagram modes.
  */
-export default function FlowCanvas({ onNodeSelect }: FlowCanvasProps) {
-  // ─── State ───────────────────────────────────────────────
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-
-  // screenToFlowPosition converts screen px → flow coordinates
-  const { screenToFlowPosition } = useReactFlow();
-
+export default function FlowCanvas({
+  mode,
+  nodes,
+  edges,
+  onNodesChange,
+  onEdgesChange,
+  setNodes,
+  setEdges,
+  onNodeSelect,
+  onEdgeSelect,
+}: FlowCanvasProps) {
   // Simple incrementing ID for new nodes
-  const nextId = useRef(100);
+  const nextId = useRef(200);
   const getId = () => `node-${nextId.current++}`;
 
   // ─── Selection tracking ─────────────────────────────────
-  const handleNodesChange = useCallback(
-    (changes: NodeChange[]) => {
-      // Let React Flow apply all changes first
-      onNodesChange(changes);
-
-      // Check if any selection-related changes occurred
-      const hasSelectionChange = changes.some(
-        (c) => c.type === "select" || c.type === "remove"
-      );
-
-      if (hasSelectionChange && onNodeSelect) {
-        // Defer reading the nodes state to after React Flow applies changes
-        // We use setTimeout(0) to read from the next tick after state updates
-        setTimeout(() => {
-          // We need to read from the React Flow instance for the latest state
-          // But since useNodesState is local, we compute the next state manually
-        }, 0);
-      }
-    },
-    [onNodesChange, onNodeSelect]
-  );
-
-  // We use onSelectionChange from ReactFlow for a cleaner approach
   const onSelectionChange = useCallback(
-    ({ nodes: selectedNodes }: { nodes: Node[] }) => {
+    ({ nodes: selectedNodes, edges: selectedEdges }: { nodes: Node[]; edges: Edge[] }) => {
       if (onNodeSelect) {
         onNodeSelect(selectedNodes.length === 1 ? selectedNodes[0] : null);
       }
+      if (onEdgeSelect) {
+        onEdgeSelect(selectedEdges.length === 1 ? selectedEdges[0] : null);
+      }
     },
-    [onNodeSelect]
+    [onNodeSelect, onEdgeSelect]
   );
 
   // ─── Edge creation ───────────────────────────────────────
@@ -115,14 +100,16 @@ export default function FlowCanvas({ onNodeSelect }: FlowCanvasProps) {
         addEdge(
           {
             ...connection,
-            animated: true,
-            style: { stroke: "#94a3b8", strokeWidth: 2 },
+            type: mode === "lld" ? "umlEdge" : "smoothstep",
+            animated: mode === "hld",
+            data: mode === "lld" ? { relationship: "association" } : undefined,
+            style: mode === "lld" ? { stroke: "#818cf8", strokeWidth: 2 } : { stroke: "#94a3b8", strokeWidth: 2 },
           },
           eds
         )
       );
     },
-    [setEdges]
+    [setEdges, mode]
   );
 
   // ─── Drag & Drop ────────────────────────────────────────
@@ -139,45 +126,63 @@ export default function FlowCanvas({ onNodeSelect }: FlowCanvasProps) {
       const nodeType = event.dataTransfer.getData("application/reactflow");
       if (!nodeType) return;
 
-      // 2. Look up the palette config for this type
-      const config = componentPalette.find((c) => c.type === nodeType);
-      if (!config) return;
+      let label = "";
+      let configObj: unknown = undefined;
+      let color = "#818cf8";
+      let description = "UML Class Diagram box";
 
-      // 3. Convert screen position → flow coordinates
-      const position = screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
-      });
+      if (mode === "lld" && nodeType === "umlClass") {
+        const existingCount = nodes.filter((n) => n.type === "umlClass").length;
+        label = `CustomClass${existingCount + 1}`;
+        color = "#818cf8";
+        description = "A standard low-level class structure";
+        configObj = {
+          isInterface: false,
+          isAbstract: false,
+          attributes: [],
+          methods: [],
+        };
+      } else {
+        // Look up the HLD palette config for this type
+        const config = componentPalette.find((c) => c.type === nodeType);
+        if (!config) return;
 
-      // 4. Auto-increment the label (e.g., "Server 3" if 2 servers exist)
-      const existingCount = nodes.filter((n) => n.type === nodeType).length;
-      const label = `${config.label} ${existingCount + 1}`;
+        const existingCount = nodes.filter((n) => n.type === nodeType).length;
+        label = `${config.label} ${existingCount + 1}`;
+        color = config.color;
+        description = config.description;
+        configObj = defaultConfigs[nodeType] ? { ...defaultConfigs[nodeType] } : undefined;
+      }
 
-      // 5. Create the new node with default config
+      // 2. Convert drop position → flow coordinates
+      // Instead of getReactFlowInstance, we can approximate drop position or let React Flow align it.
+      // To ensure correct drop coordinates, standard window translation is applied.
+      const rect = event.currentTarget.getBoundingClientRect();
+      const x = event.clientX - rect.left - 100;
+      const y = event.clientY - rect.top - 50;
+
+      // 3. Create the new node with default config
       const newNode: Node = {
         id: getId(),
         type: nodeType,
-        position,
+        position: { x, y },
         data: {
           label,
-          icon: config.icon,
-          description: config.description,
-          color: config.color,
-          config: defaultConfigs[nodeType]
-            ? { ...defaultConfigs[nodeType] }
-            : undefined,
+          icon: nodeType === "umlClass" ? "📦" : (componentPalette.find((c) => c.type === nodeType)?.icon || "⚙️"),
+          description,
+          color,
+          config: configObj,
         },
       };
 
       setNodes((nds) => [...nds, newNode]);
     },
-    [nodes, setNodes, screenToFlowPosition]
+    [nodes, setNodes, mode]
   );
 
   // ─── Keyboard Delete ─────────────────────────────────────
   const onKeyDown = useCallback(
     (event: KeyboardEvent) => {
-      // Ignore keydown if user is typing in an input/textarea/select
       const target = event.target as HTMLElement;
       if (
         target.tagName === "INPUT" ||
@@ -187,31 +192,26 @@ export default function FlowCanvas({ onNodeSelect }: FlowCanvasProps) {
         return;
 
       if (event.key === "Backspace" || event.key === "Delete") {
-        // Find all selected node IDs
         const selectedIds = new Set(
           nodes.filter((n) => n.selected).map((n) => n.id)
         );
 
         if (selectedIds.size === 0) return;
 
-        // Remove selected nodes
         setNodes((nds) => nds.filter((n) => !selectedIds.has(n.id)));
-
-        // Remove edges connected to deleted nodes
         setEdges((eds) =>
           eds.filter(
             (e) => !selectedIds.has(e.source) && !selectedIds.has(e.target)
           )
         );
 
-        // Clear selection
         if (onNodeSelect) onNodeSelect(null);
+        if (onEdgeSelect) onEdgeSelect(null);
       }
     },
-    [nodes, setNodes, setEdges, onNodeSelect]
+    [nodes, setNodes, setEdges, onNodeSelect, onEdgeSelect]
   );
 
-  // ─── Render ──────────────────────────────────────────────
   return (
     <div className="w-full h-full" onKeyDown={onKeyDown} tabIndex={0}>
       <ReactFlow
@@ -224,15 +224,73 @@ export default function FlowCanvas({ onNodeSelect }: FlowCanvasProps) {
         onDrop={onDrop}
         onSelectionChange={onSelectionChange}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         fitView
         fitViewOptions={{ padding: 0.3 }}
         deleteKeyCode={null}
         defaultEdgeOptions={{
-          type: "smoothstep",
-          animated: true,
+          type: mode === "lld" ? "umlEdge" : "smoothstep",
+          animated: mode === "hld",
         }}
         proOptions={{ hideAttribution: true }}
       >
+        {/* Custom SVG marker shapes for standard UML relationship lines */}
+        <svg style={{ position: "absolute", width: 0, height: 0 }}>
+          <defs>
+            {/* Hollow arrowhead for UML Generalization / Inheritance (extends) */}
+            <marker
+              id="uml-inheritance-arrow"
+              viewBox="0 0 10 10"
+              refX="10"
+              refY="5"
+              markerWidth="7"
+              markerHeight="7"
+              orient="auto-start-reverse"
+            >
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#0f172a" stroke="#818cf8" strokeWidth="1.5" />
+            </marker>
+
+            {/* Simple open arrowhead for UML Association / Dependency */}
+            <marker
+              id="uml-association-arrow"
+              viewBox="0 0 10 10"
+              refX="10"
+              refY="5"
+              markerWidth="6"
+              markerHeight="6"
+              orient="auto-start-reverse"
+            >
+              <path d="M 0 0 L 10 5 L 0 10" fill="none" stroke="#818cf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </marker>
+
+            {/* Filled diamond for UML Composition */}
+            <marker
+              id="uml-composition-diamond"
+              viewBox="0 0 12 12"
+              refX="0"
+              refY="6"
+              markerWidth="8"
+              markerHeight="8"
+              orient="auto-start-reverse"
+            >
+              <path d="M 0 6 L 6 0 L 12 6 L 6 12 z" fill="#818cf8" stroke="#818cf8" />
+            </marker>
+
+            {/* Hollow diamond for UML Aggregation */}
+            <marker
+              id="uml-aggregation-diamond"
+              viewBox="0 0 12 12"
+              refX="0"
+              refY="6"
+              markerWidth="8"
+              markerHeight="8"
+              orient="auto-start-reverse"
+            >
+              <path d="M 0 6 L 6 0 L 12 6 L 6 12 z" fill="#0f172a" stroke="#818cf8" strokeWidth="1.5" />
+            </marker>
+          </defs>
+        </svg>
+
         <Background
           variant={BackgroundVariant.Dots}
           gap={20}

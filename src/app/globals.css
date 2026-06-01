@@ -454,3 +454,36 @@ body {
   min-width: 42px;
   text-align: right;
 }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   UML Node & LLD styles
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.uml-node {
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.92);
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.uml-node:hover {
+  transform: translateY(-1px);
+}
+
+.scale-102 {
+  transform: scale(1.02);
+}
+
+/* React Flow custom edge connector overlays */
+.react-flow__edge-path {
+  transition: stroke 0.2s, stroke-width 0.2s;
+}
+
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke-width: 3.5px !important;
+  stroke: #c7d2fe !important;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke-width: 3px !important;
+  stroke: #818cf8 !important;
+}
+

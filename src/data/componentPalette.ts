@@ -1,5 +1,3 @@
-import type { SystemNodeData } from "@/types/nodes";
-
 /**
  * Component palette — defines all node types available in the sidebar.
  *

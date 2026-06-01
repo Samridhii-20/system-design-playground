@@ -3,9 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev:frontend": "next dev",
+    "dev:backend": "cd backend && npm install && node server.js",
+    "dev": "npx concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
     "build": "next build",
-    "start": "next start",
+    "start": "npx concurrently \"next start\" \"cd backend && node server.js\"",
     "lint": "eslint"
   },
   "dependencies": {
@@ -19,6 +21,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^8.2.2",
     "eslint": "^9",
     "eslint-config-next": "16.2.3",
     "tailwindcss": "^4",
