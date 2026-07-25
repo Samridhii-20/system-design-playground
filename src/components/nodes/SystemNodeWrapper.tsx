@@ -58,8 +58,18 @@ export default function SystemNodeWrapper({
           : `0 0 20px ${color}33`,
       }}
     >
-      {/* ─── Top handle (input) ─── */}
-      <Handle type="target" position={Position.Top} className="handle" />
+      {/* ─── Flexible Handles on Top, Bottom, Left, Right ─── */}
+      <Handle type="target" position={Position.Top} id="top-t" isConnectableEnd={true} className="handle !z-10 cursor-crosshair" />
+      <Handle type="source" position={Position.Top} id="top-s" isConnectableStart={true} className="handle !z-20 cursor-crosshair" />
+
+      <Handle type="target" position={Position.Bottom} id="bottom-t" isConnectableEnd={true} className="handle !z-10 cursor-crosshair" />
+      <Handle type="source" position={Position.Bottom} id="bottom-s" isConnectableStart={true} className="handle !z-20 cursor-crosshair" />
+
+      <Handle type="target" position={Position.Left} id="left-t" isConnectableEnd={true} className="handle !z-10 cursor-crosshair" />
+      <Handle type="source" position={Position.Left} id="left-s" isConnectableStart={true} className="handle !z-20 cursor-crosshair" />
+
+      <Handle type="target" position={Position.Right} id="right-t" isConnectableEnd={true} className="handle !z-10 cursor-crosshair" />
+      <Handle type="source" position={Position.Right} id="right-s" isConnectableStart={true} className="handle !z-20 cursor-crosshair" />
 
       {/* ─── Delete button (only visible when selected) ─── */}
       {selected && (
@@ -100,9 +110,6 @@ export default function SystemNodeWrapper({
           <ConfigBadges nodeType={nodeType} config={config} color={color} />
         </div>
       )}
-
-      {/* ─── Bottom handle (output) ─── */}
-      <Handle type="source" position={Position.Bottom} className="handle" />
     </div>
   );
 }

@@ -13,12 +13,13 @@ Featuring a live multi-language object-oriented code compiler, an interactive de
 ### 1. 📐 Low-Level Design (LLD) UML Class Modeller
 *   **Visual UML Editor:** Drag, drop, and configure standard UML Class boxes. Customize modifiers like `«Interface»` and `«Abstract»` classes.
 *   **Encapsulation Modifiers:** Configure internal class properties (Attributes) and operations (Methods) with visibility tags (`+` for public, `-` for private, `#` for protected).
-*   **Standardized Connectors:** Model OOP relationships visually using standard UML lines:
-    *   **Inheritance/Generalization (`extends`)**: Solid line, hollow closed arrowhead.
-    *   **Realization/Implementation (`implements`)**: Dashed line, hollow closed arrowhead.
-    *   **Composition**: Solid line, filled diamond.
-    *   **Aggregation**: Solid line, hollow diamond.
-    *   **Association / Dependency**: Directed arrow lines.
+*   **Standardized Connectors:** Model OOP relationships visually using standard UML notations:
+    *   **Inheritance (`extends`)**: Solid line, hollow closed arrowhead (`───▷`). Represents an *"Is-A"* relationship with superclass structural inheritance.
+    *   **Simple Association**: Solid line, open arrowhead (`───>`). Represents a *"Knows-A" / "Uses-A"* peer connection without lifecycle ownership.
+    *   **Aggregation Association**: Solid line, hollow diamond (`◇───`). Represents a *"Weak Has-A"* whole-part relationship where contained components can exist independently.
+    *   **Composition Association**: Solid line, filled diamond (`◆───`). Represents a *"Strong Has-A"* whole-part relationship with exclusive parent lifecycle ownership.
+    *   **Realization / Dependency**: Dashed line with hollow (`- - -▷`) or open (`- - ->`) arrowheads representing contract implementation (`implements`) or transient method usage.
+
 
 ### 2. ⚡ Live Multi-Language OOP Compiler
 *   As you design UML relationships and classes on the canvas, a reactive bottom drawer **transpiles your visual models in real-time**!

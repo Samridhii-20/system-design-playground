@@ -5,15 +5,17 @@ import { useReactFlow } from "@xyflow/react";
 import { componentPalette } from "@/data/componentPalette";
 import { designPatternCatalog } from "@/data/DesignPatternCatalog";
 
+
 interface SidebarProps {
   mode: "hld" | "lld";
-  onLoadPattern?: (patternId: string) => void;
+  onLoadPattern?: (patternId: string, append?: boolean) => void;
+  onClearDiagram?: () => void;
 }
 
 /**
  * Sidebar — handles component palettes and configuration loads for both modes.
  */
-export default function Sidebar({ mode, onLoadPattern }: SidebarProps) {
+export default function Sidebar({ mode, onLoadPattern, onClearDiagram }: SidebarProps) {
   const { getNodes, getEdges, deleteElements } = useReactFlow();
 
   const [simulationResult, setSimulationResult] = useState<{ totalLatency: number; path: string[] } | null>(null);
@@ -152,39 +154,58 @@ export default function Sidebar({ mode, onLoadPattern }: SidebarProps) {
             </div>
           </div>
 
+
           {/* Design Pattern Library */}
           <div className="mt-8 pt-6 border-t border-slate-700/50 flex flex-col gap-3">
             <h3 className="text-sm font-medium text-slate-300 flex items-center gap-2 mb-1">
               <span>📚</span> Design Pattern Presets
             </h3>
             
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2.5">
               {designPatternCatalog.map((pattern) => (
-                <button
+                <div
                   key={pattern.id}
-                  onClick={() => onLoadPattern?.(pattern.id)}
-                  className="w-full text-left p-3 rounded-md bg-slate-800/40 hover:bg-slate-800 border border-slate-700/40 hover:border-indigo-600/50 transition-all cursor-pointer group"
+                  className="p-3 rounded-lg bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-indigo-500/50 transition-all flex flex-col gap-2 group"
                 >
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-xs font-semibold text-slate-200 group-hover:text-white transition-colors">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold text-slate-200 group-hover:text-indigo-300 transition-colors">
                       {pattern.name}
                     </span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-indigo-950/80 text-indigo-400 border border-indigo-900/50 font-mono font-semibold uppercase">
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-indigo-950 text-indigo-400 border border-indigo-900 font-mono font-semibold uppercase">
                       {pattern.category}
                     </span>
                   </div>
-                  <p className="text-[10px] text-slate-400 leading-tight line-clamp-2 mt-1">
+                  <p className="text-[10px] text-slate-400 leading-relaxed line-clamp-2">
                     {pattern.description}
                   </p>
-                </button>
+
+                  <div className="flex items-center gap-1.5 pt-1.5 border-t border-slate-800/80 mt-0.5">
+                    <button
+                      type="button"
+                      onClick={() => onLoadPattern?.(pattern.id, true)}
+                      className="flex-1 bg-indigo-950/80 hover:bg-indigo-600 text-indigo-300 hover:text-white px-2 py-1 rounded text-[10px] font-semibold transition-all cursor-pointer border border-indigo-800/80 flex items-center justify-center gap-1"
+                      title="Add this pattern's classes into your active diagram"
+                    >
+                      <span>➕</span> Add to Canvas
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onLoadPattern?.(pattern.id, false)}
+                      className="bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 px-2 py-1 rounded text-[10px] font-medium transition-all cursor-pointer border border-slate-700/80 flex items-center justify-center gap-1"
+                      title="Replace current canvas with this pattern"
+                    >
+                      <span>🔄</span> Replace
+                    </button>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
         </>
       )}
 
-      {/* Keyboard hint acting as a delete button */}
-      <div className="mt-auto pt-6 pb-2 flex shrink-0">
+      {/* Footer operations: Delete selected + Delete entire diagram */}
+      <div className="mt-auto pt-4 pb-2 flex flex-col gap-2 shrink-0 border-t border-slate-800/80">
         <button
           onClick={() => {
             const selected = getNodes().filter((n) => n.selected);
@@ -192,12 +213,23 @@ export default function Sidebar({ mode, onLoadPattern }: SidebarProps) {
               deleteElements({ nodes: selected });
             }
           }}
-          className="group flex items-center justify-start gap-2 text-[12px] text-slate-400 hover:text-red-400 transition-colors cursor-pointer w-full text-left bg-transparent"
+          className="group flex items-center justify-start gap-2 text-[12px] text-slate-400 hover:text-rose-400 transition-colors cursor-pointer w-full text-left bg-transparent"
           title="Delete currently selected nodes"
         >
-          <kbd className="px-1.5 py-0.5 rounded-sm bg-slate-800 border border-slate-700 group-hover:border-red-400/50 group-hover:text-red-400 group-hover:bg-red-400/10 transition-colors font-mono text-[10px]">⌫</kbd>
+          <kbd className="px-1.5 py-0.5 rounded-sm bg-slate-800 border border-slate-700 group-hover:border-rose-400/50 group-hover:text-rose-400 group-hover:bg-rose-400/10 transition-colors font-mono text-[10px]">⌫</kbd>
           Delete selected element
         </button>
+
+        {onClearDiagram && (
+          <button
+            onClick={onClearDiagram}
+            className="group flex items-center justify-start gap-2 text-[12px] text-slate-400 hover:text-rose-400 transition-colors cursor-pointer w-full text-left bg-transparent"
+            title="Clear all nodes and connections from the active diagram"
+          >
+            <span className="text-xs text-slate-400 group-hover:text-rose-400 transition-colors">🗑️</span>
+            Delete entire diagram
+          </button>
+        )}
       </div>
     </aside>
   );

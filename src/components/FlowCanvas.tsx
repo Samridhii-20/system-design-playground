@@ -2,7 +2,6 @@
 
 import {
   useCallback,
-  useRef,
   type DragEvent,
   type KeyboardEvent,
 } from "react";
@@ -12,6 +11,7 @@ import {
   MiniMap,
   Background,
   BackgroundVariant,
+  PanOnScrollMode,
   addEdge,
   type Connection,
   type Node,
@@ -50,6 +50,8 @@ const edgeTypes = {
   umlEdge: UmlEdge,
 };
 
+import type { UmlRelationshipType } from "@/types/uml";
+
 interface FlowCanvasProps {
   mode: "hld" | "lld";
   nodes: Node[];
@@ -60,6 +62,8 @@ interface FlowCanvasProps {
   setEdges: React.Dispatch<React.SetStateAction<Edge[]>>;
   onNodeSelect?: (node: Node | null) => void;
   onEdgeSelect?: (edge: Edge | null) => void;
+  defaultRelationship?: UmlRelationshipType;
+  isReadOnly?: boolean;
 }
 
 /**
@@ -75,10 +79,14 @@ export default function FlowCanvas({
   setEdges,
   onNodeSelect,
   onEdgeSelect,
+  defaultRelationship = "association",
+  isReadOnly = false,
 }: FlowCanvasProps) {
-  // Simple incrementing ID for new nodes
-  const nextId = useRef(200);
-  const getId = () => `node-${nextId.current++}`;
+  // Unique ID generator using timestamp and random salt to prevent React key collisions
+  const getId = useCallback(
+    () => `node-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+    []
+  );
 
   // ─── Selection tracking ─────────────────────────────────
   const onSelectionChange = useCallback(
@@ -96,30 +104,35 @@ export default function FlowCanvas({
   // ─── Edge creation ───────────────────────────────────────
   const onConnect = useCallback(
     (connection: Connection) => {
+      if (isReadOnly) return;
+      const edgeId = `edge-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
       setEdges((eds) =>
         addEdge(
           {
             ...connection,
+            id: edgeId,
             type: mode === "lld" ? "umlEdge" : "smoothstep",
             animated: mode === "hld",
-            data: mode === "lld" ? { relationship: "association" } : undefined,
-            style: mode === "lld" ? { stroke: "#818cf8", strokeWidth: 2 } : { stroke: "#94a3b8", strokeWidth: 2 },
+            data: mode === "lld" ? { relationship: defaultRelationship } : undefined,
+            style: mode === "lld" ? { stroke: "#818cf8", strokeWidth: 2.5 } : { stroke: "#94a3b8", strokeWidth: 2 },
           },
           eds
         )
       );
     },
-    [setEdges, mode]
+    [setEdges, mode, defaultRelationship, isReadOnly]
   );
 
   // ─── Drag & Drop ────────────────────────────────────────
   const onDragOver = useCallback((event: DragEvent) => {
+    if (isReadOnly) return;
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
-  }, []);
+  }, [isReadOnly]);
 
   const onDrop = useCallback(
     (event: DragEvent) => {
+      if (isReadOnly) return;
       event.preventDefault();
 
       // 1. Read the component type from dataTransfer
@@ -155,8 +168,6 @@ export default function FlowCanvas({
       }
 
       // 2. Convert drop position → flow coordinates
-      // Instead of getReactFlowInstance, we can approximate drop position or let React Flow align it.
-      // To ensure correct drop coordinates, standard window translation is applied.
       const rect = event.currentTarget.getBoundingClientRect();
       const x = event.clientX - rect.left - 100;
       const y = event.clientY - rect.top - 50;
@@ -177,12 +188,13 @@ export default function FlowCanvas({
 
       setNodes((nds) => [...nds, newNode]);
     },
-    [nodes, setNodes, mode]
+    [nodes, setNodes, mode, isReadOnly, getId]
   );
 
   // ─── Keyboard Delete ─────────────────────────────────────
   const onKeyDown = useCallback(
     (event: KeyboardEvent) => {
+      if (isReadOnly) return;
       const target = event.target as HTMLElement;
       if (
         target.tagName === "INPUT" ||
@@ -209,7 +221,7 @@ export default function FlowCanvas({
         if (onEdgeSelect) onEdgeSelect(null);
       }
     },
-    [nodes, setNodes, setEdges, onNodeSelect, onEdgeSelect]
+    [nodes, setNodes, setEdges, onNodeSelect, onEdgeSelect, isReadOnly]
   );
 
   return (
@@ -217,14 +229,16 @@ export default function FlowCanvas({
       <ReactFlow
         nodes={nodes}
         edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
+        onNodesChange={isReadOnly ? () => {} : onNodesChange}
+        onEdgesChange={isReadOnly ? () => {} : onEdgesChange}
         onConnect={onConnect}
         onDragOver={onDragOver}
         onDrop={onDrop}
         onSelectionChange={onSelectionChange}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
+        nodesConnectable={!isReadOnly}
+        nodesDraggable={true}
         fitView
         fitViewOptions={{ padding: 0.3 }}
         deleteKeyCode={null}
@@ -232,6 +246,11 @@ export default function FlowCanvas({
           type: mode === "lld" ? "umlEdge" : "smoothstep",
           animated: mode === "hld",
         }}
+        panOnScroll={true}
+        panOnScrollMode={PanOnScrollMode.Free}
+        zoomOnScroll={false}
+        zoomOnPinch={true}
+        panOnDrag={true}
         proOptions={{ hideAttribution: true }}
       >
         {/* Custom SVG marker shapes for standard UML relationship lines */}
@@ -240,53 +259,97 @@ export default function FlowCanvas({
             {/* Hollow arrowhead for UML Generalization / Inheritance (extends) */}
             <marker
               id="uml-inheritance-arrow"
-              viewBox="0 0 10 10"
-              refX="10"
-              refY="5"
-              markerWidth="7"
-              markerHeight="7"
+              viewBox="0 0 14 14"
+              refX="13"
+              refY="7"
+              markerWidth="10"
+              markerHeight="10"
               orient="auto-start-reverse"
             >
-              <path d="M 0 0 L 10 5 L 0 10 z" fill="#0f172a" stroke="#818cf8" strokeWidth="1.5" />
+              <path d="M 0 1 L 12 7 L 0 13 z" fill="#0f172a" stroke="#818cf8" strokeWidth="2" />
+            </marker>
+            <marker
+              id="uml-inheritance-arrow-selected"
+              viewBox="0 0 14 14"
+              refX="13"
+              refY="7"
+              markerWidth="10"
+              markerHeight="10"
+              orient="auto-start-reverse"
+            >
+              <path d="M 0 1 L 12 7 L 0 13 z" fill="#3b0764" stroke="#c084fc" strokeWidth="2.5" />
             </marker>
 
             {/* Simple open arrowhead for UML Association / Dependency */}
             <marker
               id="uml-association-arrow"
-              viewBox="0 0 10 10"
-              refX="10"
-              refY="5"
-              markerWidth="6"
-              markerHeight="6"
+              viewBox="0 0 14 14"
+              refX="13"
+              refY="7"
+              markerWidth="10"
+              markerHeight="10"
               orient="auto-start-reverse"
             >
-              <path d="M 0 0 L 10 5 L 0 10" fill="none" stroke="#818cf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M 1 1 L 12 7 L 1 13" fill="none" stroke="#818cf8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </marker>
+            <marker
+              id="uml-association-arrow-selected"
+              viewBox="0 0 14 14"
+              refX="13"
+              refY="7"
+              markerWidth="10"
+              markerHeight="10"
+              orient="auto-start-reverse"
+            >
+              <path d="M 1 1 L 12 7 L 1 13" fill="none" stroke="#c084fc" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
             </marker>
 
             {/* Filled diamond for UML Composition */}
             <marker
               id="uml-composition-diamond"
-              viewBox="0 0 12 12"
-              refX="0"
-              refY="6"
-              markerWidth="8"
-              markerHeight="8"
+              viewBox="0 0 16 16"
+              refX="15"
+              refY="8"
+              markerWidth="12"
+              markerHeight="12"
               orient="auto-start-reverse"
             >
-              <path d="M 0 6 L 6 0 L 12 6 L 6 12 z" fill="#818cf8" stroke="#818cf8" />
+              <path d="M 0 8 L 8 1 L 16 8 L 8 15 z" fill="#818cf8" stroke="#818cf8" strokeWidth="1.5" />
+            </marker>
+            <marker
+              id="uml-composition-diamond-selected"
+              viewBox="0 0 16 16"
+              refX="15"
+              refY="8"
+              markerWidth="12"
+              markerHeight="12"
+              orient="auto-start-reverse"
+            >
+              <path d="M 0 8 L 8 1 L 16 8 L 8 15 z" fill="#c084fc" stroke="#f0abfc" strokeWidth="2" />
             </marker>
 
             {/* Hollow diamond for UML Aggregation */}
             <marker
               id="uml-aggregation-diamond"
-              viewBox="0 0 12 12"
-              refX="0"
-              refY="6"
-              markerWidth="8"
-              markerHeight="8"
+              viewBox="0 0 16 16"
+              refX="15"
+              refY="8"
+              markerWidth="12"
+              markerHeight="12"
               orient="auto-start-reverse"
             >
-              <path d="M 0 6 L 6 0 L 12 6 L 6 12 z" fill="#0f172a" stroke="#818cf8" strokeWidth="1.5" />
+              <path d="M 0 8 L 8 1 L 16 8 L 8 15 z" fill="#0f172a" stroke="#818cf8" strokeWidth="2" />
+            </marker>
+            <marker
+              id="uml-aggregation-diamond-selected"
+              viewBox="0 0 16 16"
+              refX="15"
+              refY="8"
+              markerWidth="12"
+              markerHeight="12"
+              orient="auto-start-reverse"
+            >
+              <path d="M 0 8 L 8 1 L 16 8 L 8 15 z" fill="#3b0764" stroke="#c084fc" strokeWidth="2.5" />
             </marker>
           </defs>
         </svg>

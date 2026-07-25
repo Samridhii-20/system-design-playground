@@ -57,6 +57,8 @@ export interface DesignPatternPreset {
     id: string;
     source: string;
     target: string;
+    sourceHandle?: string;
+    targetHandle?: string;
     type: string; // custom edge type e.g., 'umlEdge'
     data: {
       relationship: UmlRelationshipType;

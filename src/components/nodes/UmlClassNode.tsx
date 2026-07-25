@@ -59,7 +59,7 @@ export default function UmlClassNode({ id, selected, data }: UmlClassNodeProps) 
 
   return (
     <div
-      className={`uml-node rounded-lg overflow-hidden border bg-slate-900/90 shadow-2xl backdrop-blur-md transition-all ${
+      className={`uml-node rounded-lg border bg-slate-900/90 shadow-2xl backdrop-blur-md transition-all relative ${
         selected ? "ring-2 ring-indigo-500 scale-102" : "border-slate-700/80"
       }`}
       style={{
@@ -69,19 +69,80 @@ export default function UmlClassNode({ id, selected, data }: UmlClassNodeProps) 
           : `0 8px 32px rgba(0, 0, 0, 0.4)`,
       }}
     >
-      {/* Target handle on top */}
-      <Handle type="target" position={Position.Top} className="w-3 h-3 bg-indigo-400 border border-slate-950" />
+      {/* ─── Target & Source Handles on all 4 sides ─── */}
+      <Handle
+        type="target"
+        position={Position.Top}
+        id="top-target"
+        isConnectableEnd={true}
+        className="!w-3.5 !h-3.5 !bg-indigo-400 !border-2 !border-slate-950 hover:!scale-150 transition-transform !z-10 cursor-crosshair"
+      />
+      <Handle
+        type="source"
+        position={Position.Top}
+        id="top-source"
+        isConnectableStart={true}
+        className="!w-3.5 !h-3.5 !bg-indigo-400 !border-2 !border-slate-950 hover:!scale-150 transition-transform !z-20 cursor-crosshair"
+      />
+
+      <Handle
+        type="target"
+        position={Position.Bottom}
+        id="bottom-target"
+        isConnectableEnd={true}
+        className="!w-3.5 !h-3.5 !bg-indigo-400 !border-2 !border-slate-950 hover:!scale-150 transition-transform !z-10 cursor-crosshair"
+      />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        id="bottom-source"
+        isConnectableStart={true}
+        className="!w-3.5 !h-3.5 !bg-indigo-400 !border-2 !border-slate-950 hover:!scale-150 transition-transform !z-20 cursor-crosshair"
+      />
+
+      <Handle
+        type="target"
+        position={Position.Left}
+        id="left-target"
+        isConnectableEnd={true}
+        className="!w-3.5 !h-3.5 !bg-indigo-400 !border-2 !border-slate-950 hover:!scale-150 transition-transform !z-10 cursor-crosshair"
+      />
+      <Handle
+        type="source"
+        position={Position.Left}
+        id="left-source"
+        isConnectableStart={true}
+        className="!w-3.5 !h-3.5 !bg-indigo-400 !border-2 !border-slate-950 hover:!scale-150 transition-transform !z-20 cursor-crosshair"
+      />
+
+      <Handle
+        type="target"
+        position={Position.Right}
+        id="right-target"
+        isConnectableEnd={true}
+        className="!w-3.5 !h-3.5 !bg-indigo-400 !border-2 !border-slate-950 hover:!scale-150 transition-transform !z-10 cursor-crosshair"
+      />
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="right-source"
+        isConnectableStart={true}
+        className="!w-3.5 !h-3.5 !bg-indigo-400 !border-2 !border-slate-950 hover:!scale-150 transition-transform !z-20 cursor-crosshair"
+      />
 
       {/* Delete Button */}
       {selected && (
         <button
-          className="absolute -top-3.5 -right-3.5 w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs hover:bg-rose-600 transition-colors z-20 cursor-pointer shadow-lg border border-slate-950"
+          className="absolute -top-3.5 -right-3.5 w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs hover:bg-rose-600 transition-colors z-30 cursor-pointer shadow-lg border border-slate-950"
           onClick={onDelete}
           title="Delete class"
         >
           ✕
         </button>
       )}
+
+      {/* Card Content Container */}
+      <div className="rounded-lg overflow-hidden">
 
       {/* 1. Header Row */}
       <div
@@ -123,25 +184,34 @@ export default function UmlClassNode({ id, selected, data }: UmlClassNodeProps) 
         {attributes.length === 0 ? (
           <span className="text-[10px] text-slate-600 italic">No attributes</span>
         ) : (
-          attributes.map((attr) => (
-            <div key={attr.id} className="flex justify-between items-center text-[11px] font-mono text-slate-300">
-              <span className="truncate">
-                <span
-                  className={`font-bold mr-1 ${
-                    attr.visibility === "private"
-                      ? "text-rose-400"
-                      : attr.visibility === "protected"
-                      ? "text-amber-400"
-                      : "text-emerald-400"
-                  }`}
-                >
-                  {getVisSymbol(attr.visibility)}
+          attributes.map((attr) => {
+            const fullSig = `${getVisSymbol(attr.visibility)} ${attr.name}: ${attr.type}`;
+            return (
+              <div
+                key={attr.id}
+                title={fullSig}
+                className="flex justify-between items-center text-[11px] font-mono text-slate-300 hover:text-white transition-colors cursor-help"
+              >
+                <span className="truncate flex-1 mr-2">
+                  <span
+                    className={`font-bold mr-1 ${
+                      attr.visibility === "private"
+                        ? "text-rose-400"
+                        : attr.visibility === "protected"
+                        ? "text-amber-400"
+                        : "text-emerald-400"
+                    }`}
+                  >
+                    {getVisSymbol(attr.visibility)}
+                  </span>
+                  <span>{attr.name}</span>
                 </span>
-                <span>{attr.name}</span>
-              </span>
-              <span className="text-slate-500 font-normal ml-2">{attr.type}</span>
-            </div>
-          ))
+                <span className="text-slate-500 font-normal shrink-0 truncate max-w-[110px]" title={attr.type}>
+                  {attr.type}
+                </span>
+              </div>
+            );
+          })
         )}
       </div>
 
@@ -152,8 +222,13 @@ export default function UmlClassNode({ id, selected, data }: UmlClassNodeProps) 
         ) : (
           methods.map((meth) => {
             const params = meth.parameters.map((p) => `${p.name}: ${p.type}`).join(", ");
+            const fullSig = `${getVisSymbol(meth.visibility)} ${meth.name}(${params}): ${meth.returnType}`;
             return (
-              <div key={meth.id} className="flex justify-between items-start text-[11px] font-mono text-slate-300">
+              <div
+                key={meth.id}
+                title={fullSig}
+                className="flex justify-between items-start text-[11px] font-mono text-slate-300 hover:text-white transition-colors cursor-help"
+              >
                 <span className="truncate flex-1 mr-1">
                   <span
                     className={`font-bold mr-1 ${
@@ -169,15 +244,20 @@ export default function UmlClassNode({ id, selected, data }: UmlClassNodeProps) 
                   <span className="font-semibold">{meth.name}</span>
                   <span className="text-slate-400">({params})</span>
                 </span>
-                <span className="text-slate-500 font-normal shrink-0">{meth.returnType}</span>
+                <span className="text-slate-500 font-normal shrink-0">
+                  {meth.returnType}
+                  {!isInterface && !isAbstract && (
+                    <span className="text-indigo-400 font-bold ml-1" title="Concrete method definition { }">
+                      {`{ }`}
+                    </span>
+                  )}
+                </span>
               </div>
             );
           })
         )}
       </div>
-
-      {/* Source handle on bottom */}
-      <Handle type="source" position={Position.Bottom} className="w-3 h-3 bg-indigo-400 border border-slate-950" />
+    </div>
     </div>
   );
 }
