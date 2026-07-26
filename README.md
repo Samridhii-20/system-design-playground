@@ -36,6 +36,11 @@ Featuring a live multi-language object-oriented code compiler, an interactive de
     *   **Factory Method (Creational):** Decouples client systems from instantiating low-level products using abstract factory contracts.
     *   **Strategy (Behavioral):** Encapsulates interchangeable algorithms (e.g. Credit Card vs PayPal payments) communicating dynamically at runtime.
     *   **Observer (Behavioral):** A one-to-many subscription dispatcher notifying subscribers automatically when publishers change state.
+    *   **Decorator (Structural):** Dynamically attaches new behaviors and responsibilities to objects at runtime without altering existing code, using recursive wrapper composition over subclassing.
+    *   **Adapter (Structural):** Converts the interface of an existing incompatible class into another target interface expected by clients, enabling seamless integration between legacy components and modern systems.
+    *   **Command (Behavioral):** Encapsulates a request/operation as an object, parameterizing clients with queueable actions, delayed execution, and undoable operations.
+    *   **Facade (Structural):** Provides a unified, simplified high-level interface to a complex subsystem of interfaces, hiding internal complexity from client applications.
+
 *   **SOLID Principles Inspector:** View detailed mathematical analyses explaining exactly which SOLID principles (such as OCP and DIP) are demonstrated by each pattern.
 
 ### 4. ⚖️ High-Level Design (HLD) Topology Simulator
