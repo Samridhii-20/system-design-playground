@@ -24,9 +24,9 @@ Featuring a live multi-language object-oriented code compiler, an interactive de
 ### 2. ⚡ Live Multi-Language OOP Compiler
 *   As you design UML relationships and classes on the canvas, a reactive bottom drawer **transpiles your visual models in real-time**!
 *   Supports one-click language tabs with fully formed, syntactically precise syntax for:
+    *   **C++**
     *   **Java**
     *   **TypeScript**
-    *   **C#**
     *   **Python**
 *   Includes built-in single-click "Copy Code" capability.
 
