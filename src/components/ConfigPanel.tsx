@@ -323,7 +323,7 @@ export default function ConfigPanel({
 
     // Attribute Operations
     const addAttribute = () => {
-      const randId = `attr-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+      const randId = Math.random().toString(36).substr(2, 9);
       const newAttr: UmlAttribute = { id: randId, name: "newField", type: "string", visibility: "private" };
       updateUmlConfig({ attributes: [...config.attributes, newAttr] });
     };
@@ -339,7 +339,7 @@ export default function ConfigPanel({
 
     // Method Operations
     const addMethod = () => {
-      const randId = `meth-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+      const randId = Math.random().toString(36).substr(2, 9);
       const newMeth: UmlMethod = { id: randId, name: "newMethod", returnType: "void", parameters: [], visibility: "public" };
       updateUmlConfig({ methods: [...config.methods, newMeth] });
     };
@@ -466,13 +466,13 @@ export default function ConfigPanel({
                     {/* Inline Edit Inputs */}
                     <div className="flex gap-1.5 items-center w-full">
                       <select
-                        className="text-[10px] bg-slate-950 border border-slate-800 rounded px-1 py-1 text-slate-300 outline-none w-10 shrink-0 cursor-pointer"
+                        className="text-[10px] bg-slate-950 border border-slate-800 rounded px-1.5 py-1 text-slate-300 outline-none cursor-pointer font-mono font-medium focus:border-indigo-500 w-[108px] shrink-0"
                         value={attr.visibility}
                         onChange={(e) => updateAttribute(attr.id, { visibility: e.target.value as UmlVisibility })}
                       >
-                        <option value="private">-</option>
-                        <option value="public">+</option>
-                        <option value="protected">#</option>
+                        <option value="private">- Private</option>
+                        <option value="public">+ Public</option>
+                        <option value="protected"># Protected</option>
                       </select>
 
                       <input
@@ -491,7 +491,7 @@ export default function ConfigPanel({
                         className="text-[10px] bg-slate-950 border border-slate-800 rounded px-2 py-1 text-indigo-300 outline-none flex-1 min-w-0 font-mono focus:border-indigo-500 transition-colors"
                         value={attr.type}
                         onChange={(e) => updateAttribute(attr.id, { type: e.target.value })}
-                        placeholder="Type e.g. vector<INotification>"
+                        placeholder="Type"
                         title={attr.type}
                       />
                     </div>
@@ -546,13 +546,13 @@ export default function ConfigPanel({
                       {/* Method Inputs */}
                       <div className="flex gap-1.5 items-center w-full">
                         <select
-                          className="text-[10px] bg-slate-950 border border-slate-800 rounded px-1 py-1 text-slate-300 outline-none w-10 shrink-0 cursor-pointer"
+                          className="text-[10px] bg-slate-950 border border-slate-800 rounded px-1.5 py-1 text-slate-300 outline-none cursor-pointer font-mono font-medium focus:border-indigo-500 w-[108px] shrink-0"
                           value={meth.visibility}
                           onChange={(e) => updateMethod(meth.id, { visibility: e.target.value as UmlVisibility })}
                         >
-                          <option value="public">+</option>
-                          <option value="private">-</option>
-                          <option value="protected">#</option>
+                          <option value="private">- Private</option>
+                          <option value="public">+ Public</option>
+                          <option value="protected"># Protected</option>
                         </select>
 
                         <input
@@ -568,7 +568,7 @@ export default function ConfigPanel({
 
                         <input
                           type="text"
-                          className="text-[10px] bg-slate-950 border border-slate-800 rounded px-2 py-1 text-indigo-300 outline-none w-20 shrink-0 font-mono focus:border-indigo-500 transition-colors"
+                          className="text-[10px] bg-slate-950 border border-slate-800 rounded px-2 py-1 text-indigo-300 outline-none flex-1 min-w-0 font-mono focus:border-indigo-500 transition-colors"
                           value={meth.returnType}
                           onChange={(e) => updateMethod(meth.id, { returnType: e.target.value })}
                           placeholder="Return Type"
