@@ -32,8 +32,6 @@ body {
    Sidebar
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 .sidebar {
-  width: 280px;
-  min-width: 280px;
   height: 100%;
   background: rgba(15, 23, 42, 0.95);
   border-right: 1px solid rgba(100, 116, 139, 0.2);
@@ -42,6 +40,8 @@ body {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .sidebar-header {
@@ -225,8 +225,6 @@ body {
    Configuration Panel (right sidebar)
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 .config-panel {
-  width: 300px;
-  min-width: 300px;
   height: 100%;
   background: rgba(15, 23, 42, 0.97);
   border-left: 1px solid rgba(100, 116, 139, 0.2);
@@ -234,7 +232,48 @@ body {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  min-width: 0;
+  box-sizing: border-box;
   animation: config-slide-in 0.25s ease-out;
+}
+
+/* Sidebar Drag Resizer Handle */
+.resizer-handle {
+  position: relative;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  user-select: none;
+  z-index: 20;
+  transition: background-color 0.2s ease;
+  background: rgba(30, 41, 59, 0.6);
+  border-left: 1px solid rgba(100, 116, 139, 0.15);
+  border-right: 1px solid rgba(100, 116, 139, 0.15);
+  flex-shrink: 0;
+}
+
+.resizer-handle:hover,
+.resizer-handle.is-dragging {
+  background: rgba(99, 102, 241, 0.7);
+}
+
+.resizer-handle::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 24px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.35);
+  transition: background-color 0.2s ease, height 0.2s ease;
+}
+
+.resizer-handle:hover::after,
+.resizer-handle.is-dragging::after {
+  background: #ffffff;
+  height: 36px;
 }
 
 @keyframes config-slide-in {

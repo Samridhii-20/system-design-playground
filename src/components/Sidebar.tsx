@@ -10,12 +10,22 @@ interface SidebarProps {
   mode: "hld" | "lld";
   onLoadPattern?: (patternId: string, append?: boolean) => void;
   onClearDiagram?: () => void;
+  width?: number;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 /**
  * Sidebar — handles component palettes and configuration loads for both modes.
  */
-export default function Sidebar({ mode, onLoadPattern, onClearDiagram }: SidebarProps) {
+export default function Sidebar({
+  mode,
+  onLoadPattern,
+  onClearDiagram,
+  width = 280,
+  isCollapsed = false,
+  onToggleCollapse,
+}: SidebarProps) {
   const { getNodes, getEdges, deleteElements } = useReactFlow();
 
   const [simulationResult, setSimulationResult] = useState<{ totalLatency: number; path: string[] } | null>(null);
@@ -52,18 +62,34 @@ export default function Sidebar({ mode, onLoadPattern, onClearDiagram }: Sidebar
     }
   };
 
+  if (isCollapsed) return null;
+
   return (
-    <aside className="sidebar flex flex-col h-full overflow-y-auto overflow-x-hidden p-4 bg-slate-900 border-r border-slate-800 z-10 basis-64 shrink-0 shadow-xl select-none">
+    <aside
+      className="sidebar flex flex-col h-full overflow-y-auto overflow-x-hidden p-4 bg-slate-900 border-r border-slate-800 z-10 shrink-0 shadow-xl select-none"
+      style={{ width: `${width}px` }}
+    >
       {mode === "hld" ? (
         <>
           {/* HLD MODE SIDEBAR */}
-          <div className="sidebar-header mb-2">
-            <h2 className="text-base font-semibold text-white tracking-tight flex items-center gap-2">
-              <span>🧩</span> HLD Components
-            </h2>
-            <p className="text-xs text-slate-400 mt-1">
-              Drag onto the canvas to build topology
-            </p>
+          <div className="sidebar-header mb-2 flex items-start justify-between">
+            <div>
+              <h2 className="text-base font-semibold text-white tracking-tight flex items-center gap-2">
+                <span>🧩</span> HLD Components
+              </h2>
+              <p className="text-xs text-slate-400 mt-1">
+                Drag onto the canvas to build topology
+              </p>
+            </div>
+            {onToggleCollapse && (
+              <button
+                onClick={onToggleCollapse}
+                className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors cursor-pointer text-xs"
+                title="Collapse Sidebar"
+              >
+                ◀
+              </button>
+            )}
           </div>
 
           <div className="flex flex-col gap-2.5 mt-4">
@@ -127,13 +153,24 @@ export default function Sidebar({ mode, onLoadPattern, onClearDiagram }: Sidebar
       ) : (
         <>
           {/* LLD MODE SIDEBAR */}
-          <div className="sidebar-header mb-2">
-            <h2 className="text-base font-semibold text-white tracking-tight flex items-center gap-2">
-              <span>📐</span> UML Components
-            </h2>
-            <p className="text-xs text-slate-400 mt-1">
-              Drag onto the canvas to design classes
-            </p>
+          <div className="sidebar-header mb-2 flex items-start justify-between">
+            <div>
+              <h2 className="text-base font-semibold text-white tracking-tight flex items-center gap-2">
+                <span>📐</span> UML Components
+              </h2>
+              <p className="text-xs text-slate-400 mt-1">
+                Drag onto the canvas to design classes
+              </p>
+            </div>
+            {onToggleCollapse && (
+              <button
+                onClick={onToggleCollapse}
+                className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors cursor-pointer text-xs"
+                title="Collapse Sidebar"
+              >
+                ◀
+              </button>
+            )}
           </div>
 
           <div className="flex flex-col gap-2.5 mt-4">

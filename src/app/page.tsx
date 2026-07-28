@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { ReactFlowProvider, useNodesState, useEdgesState, type Node, type Edge } from "@xyflow/react";
 import Sidebar from "@/components/Sidebar";
 import FlowCanvas from "@/components/FlowCanvas";
@@ -47,6 +47,88 @@ function MainApp() {
 
   // ─── Read-Only Mode State ───
   const [isReadOnly, setIsReadOnly] = useState(false);
+
+  // ─── Adjustable & Collapsible Sidebars State ───
+  const [leftWidth, setLeftWidth] = useState(280);
+  const [isLeftCollapsed, setIsLeftCollapsed] = useState(false);
+  const [rightWidth, setRightWidth] = useState(320);
+  const [isRightCollapsed, setIsRightCollapsed] = useState(false);
+
+  const [isDraggingLeft, setIsDraggingLeft] = useState(false);
+  const [isDraggingRight, setIsDraggingRight] = useState(false);
+
+  // Load sidebar preferences from localStorage
+  useEffect(() => {
+    try {
+      const savedLeft = localStorage.getItem("leftSidebarWidth");
+      const savedLeftCollapsed = localStorage.getItem("isLeftCollapsed");
+      const savedRight = localStorage.getItem("rightSidebarWidth");
+      const savedRightCollapsed = localStorage.getItem("isRightCollapsed");
+
+      if (savedLeft) setLeftWidth(Math.max(180, Math.min(500, Number(savedLeft))));
+      if (savedLeftCollapsed !== null) setIsLeftCollapsed(savedLeftCollapsed === "true");
+      if (savedRight) setRightWidth(Math.max(220, Math.min(600, Number(savedRight))));
+      if (savedRightCollapsed !== null) setIsRightCollapsed(savedRightCollapsed === "true");
+    } catch {
+      // Ignore localStorage errors
+    }
+  }, []);
+
+  // Save sidebar preferences to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem("leftSidebarWidth", String(leftWidth));
+      localStorage.setItem("isLeftCollapsed", String(isLeftCollapsed));
+      localStorage.setItem("rightSidebarWidth", String(rightWidth));
+      localStorage.setItem("isRightCollapsed", String(isRightCollapsed));
+    } catch {
+      // Ignore localStorage errors
+    }
+  }, [leftWidth, isLeftCollapsed, rightWidth, isRightCollapsed]);
+
+  // Global mousemove and mouseup listeners for dragging resizers
+  useEffect(() => {
+    if (!isDraggingLeft && !isDraggingRight) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isDraggingLeft) {
+        const newWidth = e.clientX;
+        if (newWidth < 100) {
+          setIsLeftCollapsed(true);
+        } else {
+          setIsLeftCollapsed(false);
+          setLeftWidth(Math.max(180, Math.min(500, newWidth)));
+        }
+        window.dispatchEvent(new Event("resize"));
+      } else if (isDraggingRight) {
+        const newWidth = window.innerWidth - e.clientX;
+        if (newWidth < 100) {
+          setIsRightCollapsed(true);
+        } else {
+          setIsRightCollapsed(false);
+          setRightWidth(Math.max(220, Math.min(600, newWidth)));
+        }
+        window.dispatchEvent(new Event("resize"));
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDraggingLeft(false);
+      setIsDraggingRight(false);
+      document.body.style.userSelect = "";
+      window.dispatchEvent(new Event("resize"));
+    };
+
+    document.body.style.userSelect = "none";
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      document.body.style.userSelect = "";
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDraggingLeft, isDraggingRight]);
 
   // Load a saved diagram onto the canvas (readOnly parameter determines View vs Edit mode)
   const handleLoadDiagram = (diagram: SavedDiagram, readOnly: boolean) => {
@@ -265,8 +347,46 @@ function MainApp() {
 
       {/* ─── Main Content Layout ─── */}
       <div className="flex flex-1 w-full h-full relative overflow-hidden">
+        {/* Floating Restore Button for Left Sidebar */}
+        {isLeftCollapsed && (
+          <button
+            onClick={() => {
+              setIsLeftCollapsed(false);
+              setTimeout(() => window.dispatchEvent(new Event("resize")), 50);
+            }}
+            className="absolute left-2 top-4 z-30 bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-indigo-400 hover:text-white px-2.5 py-1.5 rounded-md text-xs font-semibold shadow-xl transition-all cursor-pointer flex items-center gap-1.5 backdrop-blur-md"
+            title="Expand Left Sidebar"
+          >
+            <span>▶</span>
+            <span>Components</span>
+          </button>
+        )}
+
         {/* Sidebar */}
-        <Sidebar mode={mode} onLoadPattern={handleLoadPattern} onClearDiagram={handleClearDiagram} />
+        <Sidebar
+          mode={mode}
+          onLoadPattern={handleLoadPattern}
+          onClearDiagram={handleClearDiagram}
+          width={leftWidth}
+          isCollapsed={isLeftCollapsed}
+          onToggleCollapse={() => {
+            setIsLeftCollapsed(!isLeftCollapsed);
+            setTimeout(() => window.dispatchEvent(new Event("resize")), 50);
+          }}
+        />
+
+        {/* Left Resizer Drag Handle */}
+        {!isLeftCollapsed && (
+          <div
+            className={`resizer-handle ${isDraggingLeft ? "is-dragging" : ""}`}
+            onMouseDown={() => setIsDraggingLeft(true)}
+            onDoubleClick={() => {
+              setIsLeftCollapsed(true);
+              setTimeout(() => window.dispatchEvent(new Event("resize")), 50);
+            }}
+            title="Drag to resize sidebar • Double-click to collapse"
+          />
+        )}
 
         {/* Dynamic Canvas Container */}
         <div className="flex-1 h-full relative">
@@ -309,12 +429,46 @@ function MainApp() {
           />
         )}
 
+        {/* Right Resizer Drag Handle */}
+        {!isRightCollapsed && (
+          <div
+            className={`resizer-handle ${isDraggingRight ? "is-dragging" : ""}`}
+            onMouseDown={() => setIsDraggingRight(true)}
+            onDoubleClick={() => {
+              setIsRightCollapsed(true);
+              setTimeout(() => window.dispatchEvent(new Event("resize")), 50);
+            }}
+            title="Drag to resize inspector • Double-click to collapse"
+          />
+        )}
+
+        {/* Floating Restore Button for Right Sidebar */}
+        {isRightCollapsed && (
+          <button
+            onClick={() => {
+              setIsRightCollapsed(false);
+              setTimeout(() => window.dispatchEvent(new Event("resize")), 50);
+            }}
+            className="absolute right-2 top-4 z-30 bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-indigo-400 hover:text-white px-2.5 py-1.5 rounded-md text-xs font-semibold shadow-xl transition-all cursor-pointer flex items-center gap-1.5 backdrop-blur-md"
+            title="Expand Inspector"
+          >
+            <span>◀</span>
+            <span>Inspector</span>
+          </button>
+        )}
+
         {/* Config / Inspector Panel */}
         <ConfigPanel
           selectedNode={activeSelectedNode}
           selectedEdge={activeSelectedEdge}
           activePatternId={mode === "lld" ? activePatternId : null}
           isReadOnly={isReadOnly}
+          width={rightWidth}
+          isCollapsed={isRightCollapsed}
+          onToggleCollapse={() => {
+            setIsRightCollapsed(!isRightCollapsed);
+            setTimeout(() => window.dispatchEvent(new Event("resize")), 50);
+          }}
         />
       </div>
 

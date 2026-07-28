@@ -17,6 +17,9 @@ interface ConfigPanelProps {
   selectedEdge?: Edge | null;
   activePatternId?: string | null;
   isReadOnly?: boolean;
+  width?: number;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 /**
@@ -27,6 +30,9 @@ export default function ConfigPanel({
   selectedEdge,
   activePatternId,
   isReadOnly = false,
+  width = 300,
+  isCollapsed = false,
+  onToggleCollapse,
 }: ConfigPanelProps) {
   const { updateNodeData, setEdges, deleteElements } = useReactFlow();
 
@@ -79,14 +85,31 @@ export default function ConfigPanel({
     [selectedEdge, setEdges]
   );
 
+  if (isCollapsed) return null;
+
   // 1. Render pattern-level SOLID analysis
   const currentPattern = designPatternCatalog.find((p) => p.id === activePatternId);
 
   // 2. Determine selected element and render appropriate config
   if (!selectedNode && !selectedEdge) {
     return (
-      <aside className="config-panel overflow-y-auto" id="config-panel">
-        <div className="flex flex-col items-center justify-center h-full p-6 text-center">
+      <aside className="config-panel overflow-y-auto shrink-0" id="config-panel" style={{ width: `${width}px` }}>
+        <div className="p-3 border-b border-slate-800 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm">🧭</span>
+            <h3 className="text-xs font-semibold text-slate-300">Property Inspector</h3>
+          </div>
+          {onToggleCollapse && (
+            <button
+              onClick={onToggleCollapse}
+              className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors cursor-pointer text-xs"
+              title="Collapse Inspector"
+            >
+              ▶
+            </button>
+          )}
+        </div>
+        <div className="flex flex-col items-center justify-center flex-1 p-6 text-center">
           <span className="text-4xl mb-3">🧭</span>
           <h3 className="text-sm font-semibold text-slate-300">Property Inspector</h3>
           <p className="text-xs text-slate-500 mt-1 max-w-[200px]">
@@ -173,7 +196,7 @@ export default function ConfigPanel({
     }[relationship];
 
     return (
-      <aside className="config-panel overflow-y-auto" id="config-panel">
+      <aside className="config-panel overflow-y-auto shrink-0" id="config-panel" style={{ width: `${width}px` }}>
         <div className="config-panel-header flex justify-between items-center">
           <div className="flex items-center gap-3">
             <span className="config-panel-icon bg-indigo-950/40 text-indigo-400">🔗</span>
@@ -182,15 +205,26 @@ export default function ConfigPanel({
               <p className="text-[11px] text-slate-400 mt-0.5">Edit UML relationships</p>
             </div>
           </div>
-          {!isReadOnly && (
-            <button
-              onClick={handleDeleteEdge}
-              className="bg-rose-950/80 hover:bg-rose-900 border border-rose-800 text-rose-300 px-2.5 py-1 rounded-md text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1 shrink-0"
-              title="Delete this relationship connector"
-            >
-              <span>🗑️</span> Delete
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {!isReadOnly && (
+              <button
+                onClick={handleDeleteEdge}
+                className="bg-rose-950/80 hover:bg-rose-900 border border-rose-800 text-rose-300 px-2 py-1 rounded-md text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1 shrink-0"
+                title="Delete this relationship connector"
+              >
+                <span>🗑️</span> Delete
+              </button>
+            )}
+            {onToggleCollapse && (
+              <button
+                onClick={onToggleCollapse}
+                className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors cursor-pointer text-xs"
+                title="Collapse Inspector"
+              >
+                ▶
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="config-panel-divider" />
@@ -356,12 +390,12 @@ export default function ConfigPanel({
 
 
     return (
-      <aside className="config-panel overflow-y-auto" id="config-panel">
+      <aside className="config-panel overflow-y-auto shrink-0" id="config-panel" style={{ width: `${width}px` }}>
         {/* Header */}
-        <div className="config-panel-header">
-          <div className="flex items-center gap-3">
+        <div className="config-panel-header flex items-start justify-between">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
             <span
-              className="config-panel-icon"
+              className="config-panel-icon shrink-0"
               style={{ background: `${nodeData.color}22`, color: nodeData.color }}
             >
               📦
@@ -395,6 +429,15 @@ export default function ConfigPanel({
               </div>
             </div>
           </div>
+          {onToggleCollapse && (
+            <button
+              onClick={onToggleCollapse}
+              className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors cursor-pointer text-xs ml-2 shrink-0"
+              title="Collapse Inspector"
+            >
+              ▶
+            </button>
+          )}
         </div>
 
         <div className="config-panel-divider" />
@@ -604,11 +647,11 @@ export default function ConfigPanel({
   const config = nodeData.config;
 
   return (
-    <aside className="config-panel" id="config-panel">
-      <div className="config-panel-header">
-        <div className="flex items-center gap-3">
+    <aside className="config-panel shrink-0" id="config-panel" style={{ width: `${width}px` }}>
+      <div className="config-panel-header flex items-start justify-between">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
           <span
-            className="config-panel-icon"
+            className="config-panel-icon shrink-0"
             style={{ background: `${nodeData.color}22`, color: nodeData.color }}
           >
             {nodeData.icon}
@@ -642,11 +685,22 @@ export default function ConfigPanel({
             </div>
           </div>
         </div>
-        <div
-          className="config-panel-badge"
-          style={{ background: `${nodeData.color}18`, color: nodeData.color }}
-        >
-          {nodeType}
+        <div className="flex items-center gap-2 shrink-0">
+          <div
+            className="config-panel-badge"
+            style={{ background: `${nodeData.color}18`, color: nodeData.color }}
+          >
+            {nodeType}
+          </div>
+          {onToggleCollapse && (
+            <button
+              onClick={onToggleCollapse}
+              className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors cursor-pointer text-xs"
+              title="Collapse Inspector"
+            >
+              ▶
+            </button>
+          )}
         </div>
       </div>
 
