@@ -9,7 +9,6 @@ import { designPatternCatalog } from "@/data/DesignPatternCatalog";
 interface SidebarProps {
   mode: "hld" | "lld";
   onLoadPattern?: (patternId: string, append?: boolean) => void;
-  onClearDiagram?: () => void;
   width?: number;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
@@ -21,12 +20,11 @@ interface SidebarProps {
 export default function Sidebar({
   mode,
   onLoadPattern,
-  onClearDiagram,
   width = 280,
   isCollapsed = false,
   onToggleCollapse,
 }: SidebarProps) {
-  const { getNodes, getEdges, deleteElements } = useReactFlow();
+  const { getNodes, getEdges } = useReactFlow();
 
   const [simulationResult, setSimulationResult] = useState<{ totalLatency: number; path: string[] } | null>(null);
   const [isSimulating, setIsSimulating] = useState(false);
@@ -103,11 +101,11 @@ export default function Sidebar({
                   borderLeftColor: item.color,
                 }}
               >
-                <div className="flex items-center gap-3">
-                  <span className="text-xl">{item.icon}</span>
-                  <div>
-                    <p className="text-sm font-medium text-white group-hover:text-white transition-colors">{item.label}</p>
-                    <p className="text-[11px] text-slate-400 leading-tight mt-0.5">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="text-xl shrink-0">{item.icon}</span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-white group-hover:text-white transition-colors truncate">{item.label}</p>
+                    <p className="text-[11px] text-slate-400 leading-tight mt-0.5 line-clamp-2">
                       {item.description}
                     </p>
                   </div>
@@ -179,11 +177,11 @@ export default function Sidebar({
               draggable
               onDragStart={(e) => onDragStart(e, "umlClass")}
             >
-              <div className="flex items-center gap-3">
-                <span className="text-xl">📦</span>
-                <div>
-                  <p className="text-sm font-medium text-white transition-colors">UML Class</p>
-                  <p className="text-[11px] text-slate-400 leading-tight mt-0.5">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="text-xl shrink-0">📦</span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-white transition-colors truncate">UML Class</p>
+                  <p className="text-[11px] text-slate-400 leading-tight mt-0.5 line-clamp-2">
                     Standard class structure or abstract interface
                   </p>
                 </div>
@@ -198,29 +196,29 @@ export default function Sidebar({
               <span>📚</span> Design Pattern Presets
             </h3>
             
-            <div className="flex flex-col gap-2.5">
+            <div className="flex flex-col gap-2.5 min-w-0 w-full">
               {designPatternCatalog.map((pattern) => (
                 <div
                   key={pattern.id}
-                  className="p-3 rounded-lg bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-indigo-500/50 transition-all flex flex-col gap-2 group"
+                  className="p-3 rounded-lg bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-indigo-500/50 transition-all flex flex-col gap-2 group min-w-0 w-full overflow-hidden"
                 >
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold text-slate-200 group-hover:text-indigo-300 transition-colors">
+                  <div className="flex flex-wrap justify-between items-center gap-1 min-w-0 w-full">
+                    <span className="text-xs font-bold text-slate-200 group-hover:text-indigo-300 transition-colors truncate min-w-0 flex-1">
                       {pattern.name}
                     </span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-indigo-950 text-indigo-400 border border-indigo-900 font-mono font-semibold uppercase">
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-indigo-950 text-indigo-400 border border-indigo-900 font-mono font-semibold uppercase shrink-0">
                       {pattern.category}
                     </span>
                   </div>
-                  <p className="text-[10px] text-slate-400 leading-relaxed line-clamp-2">
+                  <p className="text-[10px] text-slate-400 leading-relaxed line-clamp-2 break-words">
                     {pattern.description}
                   </p>
 
-                  <div className="flex items-center gap-1.5 pt-1.5 border-t border-slate-800/80 mt-0.5">
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1.5 border-t border-slate-800/80 mt-0.5 w-full">
                     <button
                       type="button"
                       onClick={() => onLoadPattern?.(pattern.id, true)}
-                      className="flex-1 bg-indigo-950/80 hover:bg-indigo-600 text-indigo-300 hover:text-white px-2 py-1 rounded text-[10px] font-semibold transition-all cursor-pointer border border-indigo-800/80 flex items-center justify-center gap-1"
+                      className="flex-1 min-w-[100px] bg-indigo-950/80 hover:bg-indigo-600 text-indigo-300 hover:text-white px-2 py-1 rounded text-[10px] font-semibold transition-all cursor-pointer border border-indigo-800/80 flex items-center justify-center gap-1 shrink-0"
                       title="Add this pattern's classes into your active diagram"
                     >
                       <span>➕</span> Add to Canvas
@@ -228,7 +226,7 @@ export default function Sidebar({
                     <button
                       type="button"
                       onClick={() => onLoadPattern?.(pattern.id, false)}
-                      className="bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 px-2 py-1 rounded text-[10px] font-medium transition-all cursor-pointer border border-slate-700/80 flex items-center justify-center gap-1"
+                      className="flex-1 min-w-[70px] bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 px-2 py-1 rounded text-[10px] font-medium transition-all cursor-pointer border border-slate-700/80 flex items-center justify-center gap-1 shrink-0"
                       title="Replace current canvas with this pattern"
                     >
                       <span>🔄</span> Replace
@@ -240,34 +238,6 @@ export default function Sidebar({
           </div>
         </>
       )}
-
-      {/* Footer operations: Delete selected + Delete entire diagram */}
-      <div className="mt-auto pt-4 pb-2 flex flex-col gap-2 shrink-0 border-t border-slate-800/80">
-        <button
-          onClick={() => {
-            const selected = getNodes().filter((n) => n.selected);
-            if (selected.length > 0) {
-              deleteElements({ nodes: selected });
-            }
-          }}
-          className="group flex items-center justify-start gap-2 text-[12px] text-slate-400 hover:text-rose-400 transition-colors cursor-pointer w-full text-left bg-transparent"
-          title="Delete currently selected nodes"
-        >
-          <kbd className="px-1.5 py-0.5 rounded-sm bg-slate-800 border border-slate-700 group-hover:border-rose-400/50 group-hover:text-rose-400 group-hover:bg-rose-400/10 transition-colors font-mono text-[10px]">⌫</kbd>
-          Delete selected element
-        </button>
-
-        {onClearDiagram && (
-          <button
-            onClick={onClearDiagram}
-            className="group flex items-center justify-start gap-2 text-[12px] text-slate-400 hover:text-rose-400 transition-colors cursor-pointer w-full text-left bg-transparent"
-            title="Clear all nodes and connections from the active diagram"
-          >
-            <span className="text-xs text-slate-400 group-hover:text-rose-400 transition-colors">🗑️</span>
-            Delete entire diagram
-          </button>
-        )}
-      </div>
     </aside>
   );
 }

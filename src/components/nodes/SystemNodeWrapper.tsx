@@ -38,15 +38,7 @@ export default function SystemNodeWrapper({
   data,
 }: SystemNodeWrapperProps) {
   const { label, icon, description, color, config } = data;
-  const { deleteElements, updateNodeData } = useReactFlow();
-
-  const onDelete = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation(); // prevent node selection toggle
-      deleteElements({ nodes: [{ id }] });
-    },
-    [id, deleteElements]
-  );
+  const { updateNodeData } = useReactFlow();
 
   return (
     <div
@@ -70,18 +62,6 @@ export default function SystemNodeWrapper({
 
       <Handle type="target" position={Position.Right} id="right-t" isConnectableEnd={true} className="handle !z-10 cursor-crosshair" />
       <Handle type="source" position={Position.Right} id="right-s" isConnectableStart={true} className="handle !z-20 cursor-crosshair" />
-
-      {/* ─── Delete button (only visible when selected) ─── */}
-      {selected && (
-        <button
-          className="node-delete-btn"
-          onClick={onDelete}
-          title="Delete node"
-          aria-label="Delete node"
-        >
-          ✕
-        </button>
-      )}
 
       {/* ─── Content ─── */}
       <div className="flex items-center gap-3 w-full">

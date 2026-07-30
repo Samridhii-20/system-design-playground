@@ -36,15 +36,7 @@ function getVisSymbol(vis: UmlVisibility): string {
  */
 export default function UmlClassNode({ id, selected, data }: UmlClassNodeProps) {
   const { label, description, color, config } = data;
-  const { deleteElements, updateNodeData } = useReactFlow();
-
-  const onDelete = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      deleteElements({ nodes: [{ id }] });
-    },
-    [id, deleteElements]
-  );
+  const { updateNodeData } = useReactFlow();
 
   const handleTitleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -129,17 +121,6 @@ export default function UmlClassNode({ id, selected, data }: UmlClassNodeProps) 
         isConnectableStart={true}
         className="!w-3.5 !h-3.5 !bg-indigo-400 !border-2 !border-slate-950 hover:!scale-150 transition-transform !z-20 cursor-crosshair"
       />
-
-      {/* Delete Button */}
-      {selected && (
-        <button
-          className="absolute -top-3.5 -right-3.5 w-6 h-6 rounded-full bg-rose-500 text-white flex items-center justify-center text-xs hover:bg-rose-600 transition-colors z-30 cursor-pointer shadow-lg border border-slate-950"
-          onClick={onDelete}
-          title="Delete class"
-        >
-          ✕
-        </button>
-      )}
 
       {/* Card Content Container */}
       <div className="rounded-lg overflow-hidden">

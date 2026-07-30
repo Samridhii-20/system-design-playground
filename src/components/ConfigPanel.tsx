@@ -205,26 +205,15 @@ export default function ConfigPanel({
               <p className="text-[11px] text-slate-400 mt-0.5">Edit UML relationships</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            {!isReadOnly && (
-              <button
-                onClick={handleDeleteEdge}
-                className="bg-rose-950/80 hover:bg-rose-900 border border-rose-800 text-rose-300 px-2 py-1 rounded-md text-[11px] font-semibold transition-colors cursor-pointer flex items-center gap-1 shrink-0"
-                title="Delete this relationship connector"
-              >
-                <span>🗑️</span> Delete
-              </button>
-            )}
-            {onToggleCollapse && (
-              <button
-                onClick={onToggleCollapse}
-                className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors cursor-pointer text-xs"
-                title="Collapse Inspector"
-              >
-                ▶
-              </button>
-            )}
-          </div>
+          {onToggleCollapse && (
+            <button
+              onClick={onToggleCollapse}
+              className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors cursor-pointer text-xs shrink-0"
+              title="Collapse Inspector"
+            >
+              ▶
+            </button>
+          )}
         </div>
 
         <div className="config-panel-divider" />
@@ -400,18 +389,18 @@ export default function ConfigPanel({
             >
               📦
             </span>
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0 flex-1 overflow-hidden">
               <input
                 type="text"
-                className="text-sm font-semibold text-white bg-transparent border-none outline-none focus:bg-slate-800/40 rounded px-1 -ml-1 w-full"
+                className="text-sm font-semibold text-white bg-transparent border-none outline-none focus:bg-slate-800/40 rounded px-1 -ml-1 w-full truncate"
                 value={nodeData.label}
                 onChange={(e) => updateNodeData(selectedNode.id, { label: e.target.value })}
                 placeholder="Class Name"
               />
-              <div className="flex items-center gap-1 mt-0.5">
+              <div className="flex items-center gap-1 mt-0.5 min-w-0 w-full">
                 <input
                   type="text"
-                  className="text-[11px] text-slate-400 bg-transparent border-none outline-none focus:bg-slate-800/40 focus:text-slate-200 rounded px-1 -ml-1 flex-1 placeholder:text-slate-600 italic"
+                  className="text-[11px] text-slate-400 bg-transparent border-none outline-none focus:bg-slate-800/40 focus:text-slate-200 rounded px-1 -ml-1 flex-1 min-w-0 placeholder:text-slate-600 italic truncate"
                   value={nodeData.description || ""}
                   placeholder="Add class description or note..."
                   onChange={(e) => updateNodeData(selectedNode.id, { description: e.target.value })}
@@ -442,12 +431,12 @@ export default function ConfigPanel({
 
         <div className="config-panel-divider" />
 
-        <div className="config-panel-body flex flex-col gap-5">
+        <div className="config-panel-body flex flex-col gap-5 min-w-0 w-full">
           {/* Class Options */}
-          <div className="config-field-group">
+          <div className="config-field-group min-w-0 w-full">
             <label className="config-label">Class Modifier</label>
-            <div className="flex gap-4 mt-2">
-              <label className="flex items-center gap-2 text-xs text-slate-300 font-medium cursor-pointer">
+            <div className="flex flex-wrap gap-3 mt-2 min-w-0 w-full">
+              <label className="flex items-center gap-2 text-xs text-slate-300 font-medium cursor-pointer shrink-0">
                 <input
                   type="checkbox"
                   checked={config.isInterface}
@@ -457,7 +446,7 @@ export default function ConfigPanel({
                 «Interface»
               </label>
 
-              <label className="flex items-center gap-2 text-xs text-slate-300 font-medium cursor-pointer">
+              <label className="flex items-center gap-2 text-xs text-slate-300 font-medium cursor-pointer shrink-0">
                 <input
                   type="checkbox"
                   checked={config.isAbstract}
@@ -472,26 +461,26 @@ export default function ConfigPanel({
           <div className="config-panel-divider !my-1" />
 
           {/* Attributes List */}
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <h4 className="config-section-title !m-0">📦 Fields (Attributes)</h4>
+          <div className="min-w-0 w-full">
+            <div className="flex flex-wrap justify-between items-center gap-1.5 mb-2 min-w-0 w-full">
+              <h4 className="config-section-title !m-0 truncate min-w-0 flex-1">📦 Fields (Attributes)</h4>
               <button
                 onClick={addAttribute}
-                className="text-[10px] font-semibold bg-indigo-600 hover:bg-indigo-500 text-white px-2 py-0.5 rounded transition-colors cursor-pointer"
+                className="text-[10px] font-semibold bg-indigo-600 hover:bg-indigo-500 text-white px-2 py-0.5 rounded transition-colors cursor-pointer shrink-0"
               >
                 + Add Field
               </button>
             </div>
 
-            <div className="flex flex-col gap-2.5 mt-2">
+            <div className="flex flex-col gap-2.5 mt-2 min-w-0 w-full">
               {config.attributes.length === 0 ? (
                 <span className="text-[10px] text-slate-500 italic block py-1">No attributes declared yet.</span>
               ) : (
                 config.attributes.map((attr) => (
-                  <div key={attr.id} className="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/80 flex flex-col gap-1.5">
+                  <div key={attr.id} className="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/80 flex flex-col gap-2 min-w-0 w-full overflow-hidden">
                     {/* Full Signature Preview Badge */}
-                    <div className="flex justify-between items-center bg-slate-950 px-2 py-1 rounded border border-slate-800 font-mono text-[11px] text-slate-300 overflow-x-auto">
-                      <span className="truncate">
+                    <div className="flex justify-between items-center bg-slate-950 px-2 py-1 rounded border border-slate-800 font-mono text-[11px] text-slate-300 min-w-0 w-full">
+                      <span className="truncate min-w-0 flex-1">
                         <span className="text-indigo-400 font-bold mr-1">{attr.visibility === "public" ? "+" : attr.visibility === "private" ? "-" : "#"}</span>
                         <span className="text-white font-semibold">{attr.name}</span>
                         <span className="text-slate-500"> : </span>
@@ -506,10 +495,10 @@ export default function ConfigPanel({
                       </button>
                     </div>
 
-                    {/* Inline Edit Inputs */}
-                    <div className="flex gap-1.5 items-center w-full">
+                    {/* Form Edit Inputs */}
+                    <div className="flex flex-col gap-1.5 min-w-0 w-full">
                       <select
-                        className="text-[10px] bg-slate-950 border border-slate-800 rounded px-1.5 py-1 text-slate-300 outline-none cursor-pointer font-mono font-medium focus:border-indigo-500 w-[108px] shrink-0"
+                        className="text-[10px] bg-slate-950 border border-slate-800 rounded px-2 py-1 text-slate-300 outline-none cursor-pointer font-mono font-medium focus:border-indigo-500 w-full"
                         value={attr.visibility}
                         onChange={(e) => updateAttribute(attr.id, { visibility: e.target.value as UmlVisibility })}
                       >
@@ -518,25 +507,27 @@ export default function ConfigPanel({
                         <option value="protected"># Protected</option>
                       </select>
 
-                      <input
-                        type="text"
-                        className="text-[10px] bg-slate-950 border border-slate-800 rounded px-2 py-1 text-white outline-none flex-1 min-w-0 font-mono focus:border-indigo-500 transition-colors"
-                        value={attr.name}
-                        onChange={(e) => updateAttribute(attr.id, { name: e.target.value })}
-                        placeholder="Name"
-                        title={attr.name}
-                      />
+                      <div className="flex items-center gap-1.5 min-w-0 w-full">
+                        <input
+                          type="text"
+                          className="text-[10px] bg-slate-950 border border-slate-800 rounded px-2 py-1 text-white outline-none flex-1 min-w-0 font-mono focus:border-indigo-500 transition-colors"
+                          value={attr.name}
+                          onChange={(e) => updateAttribute(attr.id, { name: e.target.value })}
+                          placeholder="Name"
+                          title={attr.name}
+                        />
 
-                      <span className="text-slate-500 text-[10px] shrink-0">:</span>
+                        <span className="text-slate-500 text-[10px] shrink-0">:</span>
 
-                      <input
-                        type="text"
-                        className="text-[10px] bg-slate-950 border border-slate-800 rounded px-2 py-1 text-indigo-300 outline-none flex-1 min-w-0 font-mono focus:border-indigo-500 transition-colors"
-                        value={attr.type}
-                        onChange={(e) => updateAttribute(attr.id, { type: e.target.value })}
-                        placeholder="Type"
-                        title={attr.type}
-                      />
+                        <input
+                          type="text"
+                          className="text-[10px] bg-slate-950 border border-slate-800 rounded px-2 py-1 text-indigo-300 outline-none flex-1 min-w-0 font-mono focus:border-indigo-500 transition-colors"
+                          value={attr.type}
+                          onChange={(e) => updateAttribute(attr.id, { type: e.target.value })}
+                          placeholder="Type"
+                          title={attr.type}
+                        />
+                      </div>
                     </div>
                   </div>
                 ))
@@ -547,18 +538,18 @@ export default function ConfigPanel({
           <div className="config-panel-divider !my-1" />
 
           {/* Methods List */}
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <h4 className="config-section-title !m-0">⚙️ Methods (Functions)</h4>
+          <div className="min-w-0 w-full">
+            <div className="flex flex-wrap justify-between items-center gap-1.5 mb-2 min-w-0 w-full">
+              <h4 className="config-section-title !m-0 truncate min-w-0 flex-1">⚙️ Methods (Functions)</h4>
               <button
                 onClick={addMethod}
-                className="text-[10px] font-semibold bg-indigo-600 hover:bg-indigo-500 text-white px-2 py-0.5 rounded transition-colors cursor-pointer"
+                className="text-[10px] font-semibold bg-indigo-600 hover:bg-indigo-500 text-white px-2 py-0.5 rounded transition-colors cursor-pointer shrink-0"
               >
                 + Add Method
               </button>
             </div>
 
-            <div className="flex flex-col gap-3 mt-2">
+            <div className="flex flex-col gap-3 mt-2 min-w-0 w-full">
               {config.methods.length === 0 ? (
                 <span className="text-[10px] text-slate-500 italic block py-1">No methods declared yet.</span>
               ) : (
@@ -567,10 +558,10 @@ export default function ConfigPanel({
                   const fullMethodSig = `${meth.visibility === "public" ? "+" : meth.visibility === "private" ? "-" : "#"} ${meth.name}(${paramsText}) : ${meth.returnType}`;
 
                   return (
-                    <div key={meth.id} className="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/80 flex flex-col gap-2">
+                    <div key={meth.id} className="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/80 flex flex-col gap-2 min-w-0 w-full overflow-hidden">
                       {/* Full Method Signature Preview Badge */}
-                      <div className="flex justify-between items-center bg-slate-950 px-2 py-1 rounded border border-slate-800 font-mono text-[11px] text-slate-300 overflow-x-auto">
-                        <span className="truncate" title={fullMethodSig}>
+                      <div className="flex justify-between items-center bg-slate-950 px-2 py-1 rounded border border-slate-800 font-mono text-[11px] text-slate-300 min-w-0 w-full">
+                        <span className="truncate min-w-0 flex-1" title={fullMethodSig}>
                           <span className="text-emerald-400 font-bold mr-1">{meth.visibility === "public" ? "+" : meth.visibility === "private" ? "-" : "#"}</span>
                           <span className="text-white font-semibold">{meth.name}</span>
                           <span className="text-slate-400">({paramsText})</span>
@@ -587,9 +578,9 @@ export default function ConfigPanel({
                       </div>
 
                       {/* Method Inputs */}
-                      <div className="flex gap-1.5 items-center w-full">
+                      <div className="flex flex-col gap-1.5 min-w-0 w-full">
                         <select
-                          className="text-[10px] bg-slate-950 border border-slate-800 rounded px-1.5 py-1 text-slate-300 outline-none cursor-pointer font-mono font-medium focus:border-indigo-500 w-[108px] shrink-0"
+                          className="text-[10px] bg-slate-950 border border-slate-800 rounded px-2 py-1 text-slate-300 outline-none cursor-pointer font-mono font-medium focus:border-indigo-500 w-full"
                           value={meth.visibility}
                           onChange={(e) => updateMethod(meth.id, { visibility: e.target.value as UmlVisibility })}
                         >
@@ -598,35 +589,37 @@ export default function ConfigPanel({
                           <option value="protected"># Protected</option>
                         </select>
 
-                        <input
-                          type="text"
-                          className="text-[10px] bg-slate-950 border border-slate-800 rounded px-2 py-1 text-white outline-none flex-1 min-w-0 font-mono focus:border-indigo-500 transition-colors"
-                          value={meth.name}
-                          onChange={(e) => updateMethod(meth.id, { name: e.target.value })}
-                          placeholder="Method Name"
-                          title={meth.name}
-                        />
+                        <div className="flex items-center gap-1.5 min-w-0 w-full">
+                          <input
+                            type="text"
+                            className="text-[10px] bg-slate-950 border border-slate-800 rounded px-2 py-1 text-white outline-none flex-1 min-w-0 font-mono focus:border-indigo-500 transition-colors"
+                            value={meth.name}
+                            onChange={(e) => updateMethod(meth.id, { name: e.target.value })}
+                            placeholder="Method Name"
+                            title={meth.name}
+                          />
 
-                        <span className="text-slate-500 text-[10px] shrink-0">:</span>
+                          <span className="text-slate-500 text-[10px] shrink-0">:</span>
 
-                        <input
-                          type="text"
-                          className="text-[10px] bg-slate-950 border border-slate-800 rounded px-2 py-1 text-indigo-300 outline-none flex-1 min-w-0 font-mono focus:border-indigo-500 transition-colors"
-                          value={meth.returnType}
-                          onChange={(e) => updateMethod(meth.id, { returnType: e.target.value })}
-                          placeholder="Return Type"
-                          title={meth.returnType}
-                        />
-                      </div>
+                          <input
+                            type="text"
+                            className="text-[10px] bg-slate-950 border border-slate-800 rounded px-2 py-1 text-indigo-300 outline-none flex-1 min-w-0 font-mono focus:border-indigo-500 transition-colors"
+                            value={meth.returnType}
+                            onChange={(e) => updateMethod(meth.id, { returnType: e.target.value })}
+                            placeholder="Return Type"
+                            title={meth.returnType}
+                          />
+                        </div>
 
-                      {/* Params Editor */}
-                      <div className="flex gap-1.5 items-center w-full">
-                        <span className="text-[9px] text-slate-500 font-mono shrink-0">Params:</span>
-                        <MethodParamsInput
-                          key={meth.id}
-                          parameters={meth.parameters}
-                          onChange={(newParams) => updateMethod(meth.id, { parameters: newParams })}
-                        />
+                        {/* Params Editor */}
+                        <div className="flex flex-col gap-1 min-w-0 w-full pt-1">
+                          <span className="text-[9px] text-slate-500 font-mono shrink-0">Params:</span>
+                          <MethodParamsInput
+                            key={meth.id}
+                            parameters={meth.parameters}
+                            onChange={(newParams) => updateMethod(meth.id, { parameters: newParams })}
+                          />
+                        </div>
                       </div>
                     </div>
                   );
@@ -659,15 +652,15 @@ export default function ConfigPanel({
           <div className="min-w-0 flex-1">
             <input
               type="text"
-              className="text-sm font-semibold text-white bg-transparent border-none outline-none focus:bg-slate-800/40 rounded px-1 -ml-1 w-full"
+              className="text-sm font-semibold text-white bg-transparent border-none outline-none focus:bg-slate-800/40 rounded px-1 -ml-1 w-full truncate"
               value={nodeData.label}
               onChange={(e) => updateNodeData(selectedNode.id, { label: e.target.value })}
               placeholder="Node Name"
             />
-            <div className="flex items-center gap-1 mt-0.5">
+            <div className="flex items-center gap-1 mt-0.5 min-w-0 w-full">
               <input
                 type="text"
-                className="text-[11px] text-slate-400 bg-transparent border-none outline-none focus:bg-slate-800/40 focus:text-slate-200 rounded px-1 -ml-1 flex-1 placeholder:text-slate-600 italic"
+                className="text-[11px] text-slate-400 bg-transparent border-none outline-none focus:bg-slate-800/40 focus:text-slate-200 rounded px-1 -ml-1 flex-1 min-w-0 placeholder:text-slate-600 italic truncate"
                 value={nodeData.description || ""}
                 placeholder="Add node description..."
                 onChange={(e) => updateNodeData(selectedNode.id, { description: e.target.value })}

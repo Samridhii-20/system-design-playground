@@ -13,6 +13,8 @@ import {
   BackgroundVariant,
   PanOnScrollMode,
   addEdge,
+  useReactFlow,
+  Panel,
   type Connection,
   type Node,
   type Edge,
@@ -64,6 +66,9 @@ interface FlowCanvasProps {
   onEdgeSelect?: (edge: Edge | null) => void;
   defaultRelationship?: UmlRelationshipType;
   isReadOnly?: boolean;
+  onClearDiagram?: () => void;
+  isLeftCollapsed?: boolean;
+  onExpandLeftSidebar?: () => void;
 }
 
 /**
@@ -81,7 +86,25 @@ export default function FlowCanvas({
   onEdgeSelect,
   defaultRelationship = "association",
   isReadOnly = false,
+  onClearDiagram,
+  isLeftCollapsed = false,
+  onExpandLeftSidebar,
 }: FlowCanvasProps) {
+  const { getNodes, getEdges, deleteElements } = useReactFlow();
+
+  const handleDeleteSelected = useCallback(() => {
+    if (isReadOnly) return;
+    const selectedNodes = getNodes().filter((n) => n.selected);
+    const selectedEdges = getEdges().filter((e) => e.selected);
+    if (selectedNodes.length > 0 || selectedEdges.length > 0) {
+      deleteElements({ nodes: selectedNodes, edges: selectedEdges });
+      if (onNodeSelect) onNodeSelect(null);
+      if (onEdgeSelect) onEdgeSelect(null);
+    }
+  }, [isReadOnly, getNodes, getEdges, deleteElements, onNodeSelect, onEdgeSelect]);
+
+  const hasSelection = nodes.some((n) => n.selected) || edges.some((e) => e.selected);
+
   // Unique ID generator using timestamp and random salt to prevent React key collisions
   const getId = useCallback(
     () => `node-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
@@ -353,6 +376,53 @@ export default function FlowCanvas({
             </marker>
           </defs>
         </svg>
+
+        <Panel
+          position="top-left"
+          className="flex items-center gap-2 bg-slate-900/90 border border-slate-800 p-1.5 rounded-xl shadow-2xl backdrop-blur-md z-20 select-none"
+        >
+          {isLeftCollapsed && onExpandLeftSidebar && (
+            <>
+              <button
+                type="button"
+                onClick={onExpandLeftSidebar}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer bg-slate-800/80 hover:bg-slate-700 text-indigo-400 hover:text-white border border-slate-700/80 shadow-sm shrink-0"
+                title="Expand Left Sidebar"
+              >
+                <span>▶</span>
+                <span>Components</span>
+              </button>
+              <div className="h-4 w-px bg-slate-800 shrink-0" />
+            </>
+          )}
+
+          <button
+            type="button"
+            onClick={handleDeleteSelected}
+            disabled={!hasSelection || isReadOnly}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer bg-slate-800/80 hover:bg-rose-950/80 hover:border-rose-800/80 text-slate-300 hover:text-rose-300 disabled:opacity-40 disabled:cursor-not-allowed border border-slate-700/80 shadow-sm shrink-0"
+            title="Delete selected element (Backspace / Del)"
+          >
+            <kbd className="px-1.5 py-0.5 rounded-sm bg-slate-900 border border-slate-700 text-[10px] font-mono text-slate-400">⌫</kbd>
+            <span>Delete selected element</span>
+          </button>
+
+          {onClearDiagram && (
+            <>
+              <div className="h-4 w-px bg-slate-800 shrink-0" />
+              <button
+                type="button"
+                onClick={onClearDiagram}
+                disabled={isReadOnly}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer bg-slate-800/80 hover:bg-rose-950/80 hover:border-rose-800/80 text-slate-300 hover:text-rose-300 disabled:opacity-40 disabled:cursor-not-allowed border border-slate-700/80 shadow-sm shrink-0"
+                title="Clear all nodes and connections from active diagram"
+              >
+                <span className="text-xs">🗑️</span>
+                <span>Delete entire diagram</span>
+              </button>
+            </>
+          )}
+        </Panel>
 
         <Background
           variant={BackgroundVariant.Dots}

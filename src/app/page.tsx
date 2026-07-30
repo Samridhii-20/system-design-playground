@@ -347,26 +347,10 @@ function MainApp() {
 
       {/* ─── Main Content Layout ─── */}
       <div className="flex flex-1 w-full h-full relative overflow-hidden">
-        {/* Floating Restore Button for Left Sidebar */}
-        {isLeftCollapsed && (
-          <button
-            onClick={() => {
-              setIsLeftCollapsed(false);
-              setTimeout(() => window.dispatchEvent(new Event("resize")), 50);
-            }}
-            className="absolute left-2 top-4 z-30 bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-indigo-400 hover:text-white px-2.5 py-1.5 rounded-md text-xs font-semibold shadow-xl transition-all cursor-pointer flex items-center gap-1.5 backdrop-blur-md"
-            title="Expand Left Sidebar"
-          >
-            <span>▶</span>
-            <span>Components</span>
-          </button>
-        )}
-
         {/* Sidebar */}
         <Sidebar
           mode={mode}
           onLoadPattern={handleLoadPattern}
-          onClearDiagram={handleClearDiagram}
           width={leftWidth}
           isCollapsed={isLeftCollapsed}
           onToggleCollapse={() => {
@@ -400,6 +384,12 @@ function MainApp() {
               setNodes={setHldNodes}
               setEdges={setHldEdges}
               onNodeSelect={setSelectedHldNode}
+              onClearDiagram={handleClearDiagram}
+              isLeftCollapsed={isLeftCollapsed}
+              onExpandLeftSidebar={() => {
+                setIsLeftCollapsed(false);
+                setTimeout(() => window.dispatchEvent(new Event("resize")), 50);
+              }}
               isReadOnly={isReadOnly}
             />
           ) : (
@@ -413,6 +403,12 @@ function MainApp() {
               setEdges={setLldEdges}
               onNodeSelect={setSelectedLldNode}
               onEdgeSelect={setSelectedLldEdge}
+              onClearDiagram={handleClearDiagram}
+              isLeftCollapsed={isLeftCollapsed}
+              onExpandLeftSidebar={() => {
+                setIsLeftCollapsed(false);
+                setTimeout(() => window.dispatchEvent(new Event("resize")), 50);
+              }}
               isReadOnly={isReadOnly}
             />
           )}
