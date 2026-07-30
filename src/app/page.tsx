@@ -11,6 +11,7 @@ import CodePanel from "@/components/CodePanel";
 import { initialNodes, initialEdges } from "@/data/initialElements";
 import { designPatternCatalog } from "@/data/DesignPatternCatalog";
 import { generateBoilerplate } from "@/utils/CodeGenerator";
+import { exportCanvasToImage } from "@/utils/exportImage";
 import SavedDiagramsModal from "@/components/SavedDiagramsModal";
 import type { SavedDiagram } from "@/types/savedDiagram";
 
@@ -38,8 +39,11 @@ function MainApp() {
   // ─── LLD Preset Catalog tracking ───
   const [activePatternId, setActivePatternId] = useState<string | null>(null);
 
-  // ─── Saved Diagrams Modal State ───
+  // ─── Saved Diagrams Modal & Active Loaded Diagram States ───
   const [isSavedModalOpen, setIsSavedModalOpen] = useState(false);
+  const [activeDiagramId, setActiveDiagramId] = useState<string | null>(null);
+  const [activeDiagramName, setActiveDiagramName] = useState<string | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // ─── Code Panel Drawer States ───
   const [isCodeDrawerOpen, setIsCodeDrawerOpen] = useState(false);
@@ -134,6 +138,9 @@ function MainApp() {
   const handleLoadDiagram = (diagram: SavedDiagram, readOnly: boolean) => {
     setMode(diagram.mode);
     setIsReadOnly(readOnly);
+    setActiveDiagramId(diagram.id);
+    setActiveDiagramName(diagram.name);
+    setHasUnsavedChanges(false);
 
     // Sanitize node IDs to guarantee 100% uniqueness and heal legacy saved duplicates
     const seenNodeIds = new Set<string>();
@@ -289,31 +296,43 @@ function MainApp() {
   return (
     <div className="flex flex-col w-screen h-screen bg-slate-950 text-white font-sans overflow-hidden">
       {/* ─── Sleek Header & Mode Switcher ─── */}
-      <header className="h-14 shrink-0 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-6 z-30 shadow-md">
+      <header className="h-14 shrink-0 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-6 z-50 shadow-md relative">
         <div className="flex items-center gap-2.5">
           <span className="text-xl">🛠️</span>
-          <span className="font-bold text-sm tracking-wide bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+          <span className="font-bold text-sm tracking-wide bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent select-none">
             SYSTEM DESIGN & LLD PLAYGROUND
           </span>
         </div>
 
         {/* Premium Mode Switcher Pill */}
-        <div className="flex bg-slate-950 p-1 rounded-full border border-slate-800 shadow-inner">
+        <div className="flex bg-slate-950 p-1 rounded-full border border-slate-800 shadow-inner z-50">
           <button
-            onClick={() => setMode("hld")}
+            type="button"
+            onClick={() => {
+              setMode("hld");
+              setSelectedHldNode(null);
+              setSelectedLldNode(null);
+              setSelectedLldEdge(null);
+            }}
             className={`text-xs px-4 py-1.5 rounded-full font-semibold transition-all duration-300 cursor-pointer ${
               mode === "hld"
-                ? "bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-500/20"
+                ? "bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-500/20 font-bold"
                 : "text-slate-400 hover:text-slate-200"
             }`}
           >
             ⚡ HLD System Topology
           </button>
           <button
-            onClick={() => setMode("lld")}
+            type="button"
+            onClick={() => {
+              setMode("lld");
+              setSelectedHldNode(null);
+              setSelectedLldNode(null);
+              setSelectedLldEdge(null);
+            }}
             className={`text-xs px-4 py-1.5 rounded-full font-semibold transition-all duration-300 cursor-pointer ${
               mode === "lld"
-                ? "bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-500/20"
+                ? "bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-500/20 font-bold"
                 : "text-slate-400 hover:text-slate-200"
             }`}
           >
@@ -322,11 +341,12 @@ function MainApp() {
         </div>
 
         {/* Saved Diagrams & Status */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 z-50">
           {isReadOnly && (
             <div className="flex items-center gap-2 bg-amber-950/80 border border-amber-800 text-amber-300 px-3 py-1 rounded-full text-xs font-semibold shadow-inner animate-in fade-in">
               <span>👁️ View-Only Mode</span>
               <button
+                type="button"
                 onClick={() => setIsReadOnly(false)}
                 className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded-full font-bold transition-colors cursor-pointer text-[10px]"
               >
@@ -335,8 +355,10 @@ function MainApp() {
             </div>
           )}
           <button
+            type="button"
             onClick={() => setIsSavedModalOpen(true)}
-            className="flex items-center gap-1.5 text-xs bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 px-3 py-1.5 rounded-md border border-indigo-800 font-semibold transition-colors cursor-pointer shadow-sm"
+            className="flex items-center gap-1.5 text-xs bg-indigo-950/90 hover:bg-indigo-600 text-indigo-200 hover:text-white px-3.5 py-1.5 rounded-md border border-indigo-800 hover:border-indigo-500 font-semibold transition-all cursor-pointer shadow-sm active:scale-95"
+            title="Open Saved Diagrams Library"
           >
             <span>📁</span> Saved Diagrams
           </button>
@@ -379,10 +401,22 @@ function MainApp() {
               mode="hld"
               nodes={hldNodes}
               edges={hldEdges}
-              onNodesChange={onHldNodesChange}
-              onEdgesChange={onHldEdgesChange}
-              setNodes={setHldNodes}
-              setEdges={setHldEdges}
+              onNodesChange={(changes) => {
+                onHldNodesChange(changes);
+                if (changes.some((c) => c.type !== "select")) setHasUnsavedChanges(true);
+              }}
+              onEdgesChange={(changes) => {
+                onHldEdgesChange(changes);
+                if (changes.some((c) => c.type !== "select")) setHasUnsavedChanges(true);
+              }}
+              setNodes={(action) => {
+                setHldNodes(action);
+                setHasUnsavedChanges(true);
+              }}
+              setEdges={(action) => {
+                setHldEdges(action);
+                setHasUnsavedChanges(true);
+              }}
               onNodeSelect={setSelectedHldNode}
               onClearDiagram={handleClearDiagram}
               isLeftCollapsed={isLeftCollapsed}
@@ -397,10 +431,22 @@ function MainApp() {
               mode="lld"
               nodes={lldNodes}
               edges={lldEdges}
-              onNodesChange={onLldNodesChange}
-              onEdgesChange={onLldEdgesChange}
-              setNodes={setLldNodes}
-              setEdges={setLldEdges}
+              onNodesChange={(changes) => {
+                onLldNodesChange(changes);
+                if (changes.some((c) => c.type !== "select")) setHasUnsavedChanges(true);
+              }}
+              onEdgesChange={(changes) => {
+                onLldEdgesChange(changes);
+                if (changes.some((c) => c.type !== "select")) setHasUnsavedChanges(true);
+              }}
+              setNodes={(action) => {
+                setLldNodes(action);
+                setHasUnsavedChanges(true);
+              }}
+              setEdges={(action) => {
+                setLldEdges(action);
+                setHasUnsavedChanges(true);
+              }}
               onNodeSelect={setSelectedLldNode}
               onEdgeSelect={setSelectedLldEdge}
               onClearDiagram={handleClearDiagram}
@@ -475,6 +521,10 @@ function MainApp() {
         mode={mode}
         currentNodes={activeNodes}
         currentEdges={activeEdges}
+        activeDiagramId={activeDiagramId}
+        activeDiagramName={activeDiagramName}
+        hasUnsavedChanges={hasUnsavedChanges}
+        onMarkChangesSaved={() => setHasUnsavedChanges(false)}
         onLoadDiagram={handleLoadDiagram}
       />
     </div>
