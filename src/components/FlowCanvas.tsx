@@ -15,6 +15,7 @@ import {
   addEdge,
   useReactFlow,
   Panel,
+  ViewportPortal,
   type Connection,
   type Node,
   type Edge,
@@ -277,105 +278,107 @@ export default function FlowCanvas({
         proOptions={{ hideAttribution: true }}
       >
         {/* Custom SVG marker shapes for standard UML relationship lines */}
-        <svg style={{ position: "absolute", width: 0, height: 0 }}>
-          <defs>
-            {/* Hollow arrowhead for UML Generalization / Inheritance (extends) */}
-            <marker
-              id="uml-inheritance-arrow"
-              viewBox="0 0 14 14"
-              refX="13"
-              refY="7"
-              markerWidth="10"
-              markerHeight="10"
-              orient="auto-start-reverse"
-            >
-              <path d="M 0 1 L 12 7 L 0 13 z" fill="#0f172a" stroke="#818cf8" strokeWidth="2" />
-            </marker>
-            <marker
-              id="uml-inheritance-arrow-selected"
-              viewBox="0 0 14 14"
-              refX="13"
-              refY="7"
-              markerWidth="10"
-              markerHeight="10"
-              orient="auto-start-reverse"
-            >
-              <path d="M 0 1 L 12 7 L 0 13 z" fill="#3b0764" stroke="#c084fc" strokeWidth="2.5" />
-            </marker>
+        <ViewportPortal>
+          <svg style={{ position: "absolute", width: 0, height: 0 }}>
+            <defs>
+              {/* Hollow arrowhead for UML Generalization / Inheritance (extends) */}
+              <marker
+                id="uml-inheritance-arrow"
+                viewBox="0 0 14 14"
+                refX="13"
+                refY="7"
+                markerWidth="10"
+                markerHeight="10"
+                orient="auto-start-reverse"
+              >
+                <path d="M 0 1 L 12 7 L 0 13 z" fill="#0f172a" stroke="#818cf8" strokeWidth="2" />
+              </marker>
+              <marker
+                id="uml-inheritance-arrow-selected"
+                viewBox="0 0 14 14"
+                refX="13"
+                refY="7"
+                markerWidth="10"
+                markerHeight="10"
+                orient="auto-start-reverse"
+              >
+                <path d="M 0 1 L 12 7 L 0 13 z" fill="#3b0764" stroke="#c084fc" strokeWidth="2.5" />
+              </marker>
 
-            {/* Simple open arrowhead for UML Association / Dependency */}
-            <marker
-              id="uml-association-arrow"
-              viewBox="0 0 14 14"
-              refX="13"
-              refY="7"
-              markerWidth="10"
-              markerHeight="10"
-              orient="auto-start-reverse"
-            >
-              <path d="M 1 1 L 12 7 L 1 13" fill="none" stroke="#818cf8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-            </marker>
-            <marker
-              id="uml-association-arrow-selected"
-              viewBox="0 0 14 14"
-              refX="13"
-              refY="7"
-              markerWidth="10"
-              markerHeight="10"
-              orient="auto-start-reverse"
-            >
-              <path d="M 1 1 L 12 7 L 1 13" fill="none" stroke="#c084fc" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-            </marker>
+              {/* Simple open arrowhead for UML Association / Dependency */}
+              <marker
+                id="uml-association-arrow"
+                viewBox="0 0 14 14"
+                refX="13"
+                refY="7"
+                markerWidth="10"
+                markerHeight="10"
+                orient="auto-start-reverse"
+              >
+                <path d="M 1 1 L 12 7 L 1 13" fill="none" stroke="#818cf8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              </marker>
+              <marker
+                id="uml-association-arrow-selected"
+                viewBox="0 0 14 14"
+                refX="13"
+                refY="7"
+                markerWidth="10"
+                markerHeight="10"
+                orient="auto-start-reverse"
+              >
+                <path d="M 1 1 L 12 7 L 1 13" fill="none" stroke="#c084fc" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+              </marker>
 
-            {/* Filled diamond for UML Composition */}
-            <marker
-              id="uml-composition-diamond"
-              viewBox="0 0 16 16"
-              refX="15"
-              refY="8"
-              markerWidth="12"
-              markerHeight="12"
-              orient="auto-start-reverse"
-            >
-              <path d="M 0 8 L 8 1 L 16 8 L 8 15 z" fill="#818cf8" stroke="#818cf8" strokeWidth="1.5" />
-            </marker>
-            <marker
-              id="uml-composition-diamond-selected"
-              viewBox="0 0 16 16"
-              refX="15"
-              refY="8"
-              markerWidth="12"
-              markerHeight="12"
-              orient="auto-start-reverse"
-            >
-              <path d="M 0 8 L 8 1 L 16 8 L 8 15 z" fill="#c084fc" stroke="#f0abfc" strokeWidth="2" />
-            </marker>
+              {/* Filled diamond for UML Composition */}
+              <marker
+                id="uml-composition-diamond"
+                viewBox="0 0 16 16"
+                refX="15"
+                refY="8"
+                markerWidth="12"
+                markerHeight="12"
+                orient="auto-start-reverse"
+              >
+                <path d="M 0 8 L 8 1 L 16 8 L 8 15 z" fill="#818cf8" stroke="#818cf8" strokeWidth="1.5" />
+              </marker>
+              <marker
+                id="uml-composition-diamond-selected"
+                viewBox="0 0 16 16"
+                refX="15"
+                refY="8"
+                markerWidth="12"
+                markerHeight="12"
+                orient="auto-start-reverse"
+              >
+                <path d="M 0 8 L 8 1 L 16 8 L 8 15 z" fill="#c084fc" stroke="#f0abfc" strokeWidth="2" />
+              </marker>
 
-            {/* Hollow diamond for UML Aggregation */}
-            <marker
-              id="uml-aggregation-diamond"
-              viewBox="0 0 16 16"
-              refX="15"
-              refY="8"
-              markerWidth="12"
-              markerHeight="12"
-              orient="auto-start-reverse"
-            >
-              <path d="M 0 8 L 8 1 L 16 8 L 8 15 z" fill="#0f172a" stroke="#818cf8" strokeWidth="2" />
-            </marker>
-            <marker
-              id="uml-aggregation-diamond-selected"
-              viewBox="0 0 16 16"
-              refX="15"
-              refY="8"
-              markerWidth="12"
-              markerHeight="12"
-              orient="auto-start-reverse"
-            >
-              <path d="M 0 8 L 8 1 L 16 8 L 8 15 z" fill="#3b0764" stroke="#c084fc" strokeWidth="2.5" />
-            </marker>
-          </defs>
-        </svg>
+              {/* Hollow diamond for UML Aggregation */}
+              <marker
+                id="uml-aggregation-diamond"
+                viewBox="0 0 16 16"
+                refX="15"
+                refY="8"
+                markerWidth="12"
+                markerHeight="12"
+                orient="auto-start-reverse"
+              >
+                <path d="M 0 8 L 8 1 L 16 8 L 8 15 z" fill="#0f172a" stroke="#818cf8" strokeWidth="2" />
+              </marker>
+              <marker
+                id="uml-aggregation-diamond-selected"
+                viewBox="0 0 16 16"
+                refX="15"
+                refY="8"
+                markerWidth="12"
+                markerHeight="12"
+                orient="auto-start-reverse"
+              >
+                <path d="M 0 8 L 8 1 L 16 8 L 8 15 z" fill="#3b0764" stroke="#c084fc" strokeWidth="2.5" />
+              </marker>
+            </defs>
+          </svg>
+        </ViewportPortal>
 
         <Panel
           position="top-left"

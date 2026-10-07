@@ -1,6 +1,7 @@
 import { toPng } from "html-to-image";
 import type { Node, Edge } from "@xyflow/react";
 import type { SavedDiagram } from "@/types/savedDiagram";
+import { injectMissingSvgDefs } from "./exportImage";
 
 const PNG_META_PREFIX = "___SDP_EDITABLE_PNG_METADATA___:";
 
@@ -18,12 +19,19 @@ export async function exportDiagramAsEditablePNG(diagram: {
     throw new Error("Canvas viewport not found!");
   }
 
+  const cleanupDefs = injectMissingSvgDefs(viewportElement);
+
   // 1. Render React Flow viewport to PNG base64 data URL
-  const dataUrl = await toPng(viewportElement, {
-    backgroundColor: "#0f172a",
-    quality: 0.95,
-    cacheBust: true,
-  });
+  let dataUrl: string;
+  try {
+    dataUrl = await toPng(viewportElement, {
+      backgroundColor: "#0f172a",
+      quality: 0.95,
+      cacheBust: true,
+    });
+  } finally {
+    cleanupDefs();
+  }
 
   // 2. Construct saved diagram payload
   const savedData: SavedDiagram = {

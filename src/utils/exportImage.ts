@@ -1,6 +1,41 @@
 import { toPng } from "html-to-image";
 
 /**
+ * Ensures that all SVG defs (such as custom UML markers) from the document
+ * are present inside the viewport element so html-to-image can capture them.
+ */
+export function injectMissingSvgDefs(viewport: HTMLElement): () => void {
+  const externalDefs = document.querySelectorAll("svg defs");
+  const missingDefs: SVGDefsElement[] = [];
+
+  externalDefs.forEach((defs) => {
+    if (!viewport.contains(defs)) {
+      missingDefs.push(defs as SVGDefsElement);
+    }
+  });
+
+  if (missingDefs.length === 0) {
+    return () => {};
+  }
+
+  const tempSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  tempSvg.setAttribute("style", "position: absolute; width: 0; height: 0; pointer-events: none;");
+  tempSvg.setAttribute("aria-hidden", "true");
+
+  missingDefs.forEach((defs) => {
+    tempSvg.appendChild(defs.cloneNode(true));
+  });
+
+  viewport.appendChild(tempSvg);
+
+  return () => {
+    if (tempSvg.parentNode) {
+      tempSvg.parentNode.removeChild(tempSvg);
+    }
+  };
+}
+
+/**
  * Captures the active ReactFlow canvas viewport and triggers a PNG image download.
  */
 export async function exportCanvasToImage(mode: "hld" | "lld" = "hld", customTitle?: string) {
@@ -9,6 +44,8 @@ export async function exportCanvasToImage(mode: "hld" | "lld" = "hld", customTit
     alert("Canvas element not found!");
     return;
   }
+
+  const cleanupDefs = injectMissingSvgDefs(viewportElement);
 
   try {
     const dataUrl = await toPng(viewportElement, {
@@ -37,5 +74,7 @@ export async function exportCanvasToImage(mode: "hld" | "lld" = "hld", customTit
   } catch (error) {
     console.error("Failed to export canvas image:", error);
     alert("Could not export canvas as PNG image.");
+  } finally {
+    cleanupDefs();
   }
 }
